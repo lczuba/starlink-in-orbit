@@ -1,0 +1,16 @@
+{
+  "name": "starlink",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "three": "^0.121.0",
+    "tle.js": "^4.2.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "lczuba",
+  "license": "ISC"
+}
