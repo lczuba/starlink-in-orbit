@@ -36,7 +36,7 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
             satellites.push(sat)
         })
 
-        console.log(satellites);
+        // console.log(satellites);
     }
     
     loadFile('../static/starlink.txt')
@@ -46,27 +46,40 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
         
     // //////////////////////////////////////////////////////////////////////////////////////
 
-    const scene = new THREE.Scene();
-    // scene.background = new THREE.Color('white')
-    const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    const renderer = new THREE.WebGLRenderer();
+    document.body.appendChild( renderer.domElement );
+
+    const fov = 45;
+    const aspect = 2;
+    const near = 0.1;
+    const far = 5;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-
+    const scene = new THREE.Scene();
+        
     const axesHelper = new THREE.AxesHelper( 2 );
     scene.add( axesHelper )
     
-    renderer.render( scene, camera);
- 
     {
         const loader = new THREE.TextureLoader();
         const texture = loader.load('../static/globe1.jpg', render);
         const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
         const material = new THREE.MeshPhongMaterial({map: texture});
         scene.add(new THREE.Mesh(geometry, material));
+    }
+
+    function resizeRendererToDisplaySize( renderer ) {
+        const canvas = renderer.domElement;
+        const pixelRatio = window.devicePixelRatio;
+        const width = canvas.clientWidth * pixelRatio | 0;
+        const height = canvas.clientHeight * pixelRatio | 0;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if(needResize) {
+            renderer.setSize(width, height, false);
+        }
+        return needResize;
     }
 
     const color = 0xFFFFFF;
@@ -114,18 +127,13 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
 
 
     function updataSat(){
-        var geometry = new THREE.SphereBufferGeometry(0.005, 64, 32);
+        var geometry = new THREE.SphereBufferGeometry(0.005, 16, 16);
         var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
         
-        var geometry2 = new THREE.SphereBufferGeometry(0.005, 64, 32);
-        var material2 = new THREE.MeshBasicMaterial( {color: 0x000000} );
-
         for(let i = 0; i < satellites.length; i++) {
             if(satellites[i].status === "ok"){
                 satellites[i].cube = new THREE.Mesh( geometry, material );
-                // satellites[i].point = new THREE.Mesh( geometry2, material2 );
                 scene.add( satellites[i].cube );
-                // scene.add( satellites[i].point );
             }
         }
 
@@ -143,32 +151,44 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
                     positionHelper.updateWorldMatrix(true, false);
                     satellites[i].cube.position.set(0,0,0);
                     satellites[i].cube.applyMatrix4(positionHelper.matrixWorld);
-
-                    // positionHelper.position.z = 0.9999;
-                    // satellites[i].point.position.set(0,0,0);
-                    // positionHelper.updateWorldMatrix(true, false);
-                    // satellites[i].point.applyMatrix4(positionHelper.matrixWorld);
-
                 }
             }
 
         }, 300);
     }
-    
 
-    
+    function moveSat() {
+            for(let i = 0; i < satellites.length; i++) {
 
-    function render() {
+                if(satellites[i].status === "ok"){
+
+                    let data = window.TLE.getLatLngObj(satellites[i].tle)
+                    // console.log(data);
+                    latHelper.rotation.x = THREE.MathUtils.degToRad(data.lat * -1);
+                    lonHelper.rotation.y = THREE.MathUtils.degToRad(90 + data.lng);
+                    positionHelper.position.z = 1 + (satellites[i].info.height / 6371);
+                    positionHelper.updateWorldMatrix(true, false);
+                    satellites[i].cube.position.set(0,0,0);
+                    satellites[i].cube.applyMatrix4(positionHelper.matrixWorld);
+                }
+            }
+    }
     
+    function render(time) {
+        time *= 0.001;
+        
+        if (resizeRendererToDisplaySize(renderer)) {
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        controls.update();
+        renderer.render( scene, camera );
         requestAnimationFrame( render );
     
-        // required if controls.enableDamping or controls.autoRotate are set to true
-        controls.update();
-    
-        renderer.render( scene, camera );
-    
     }
-    render();
+    requestAnimationFrame( render );
     console.log("start")
 
 })();
