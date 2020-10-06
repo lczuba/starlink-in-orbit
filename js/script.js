@@ -1,8 +1,8 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import * as UI from './ui.js';
 
 (function(){
-
     const satellites = [];
 
     async function loadFile(url) {
@@ -32,11 +32,10 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
                 sat.status = "error";
                 console.log("Error: Can't get info from this TLE data, sory :(");
             }
-
+            UI.addNewSatellite(sat);
             satellites.push(sat)
         })
-
-        // console.log(satellites);
+        console.log(satellites[0]);
     }
     
     loadFile('../static/starlink.txt')
@@ -44,8 +43,8 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
         .then(createSatellitesObj)
         .then(updataSat)
         
-    // //////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////////
+//  Main properties of scene, render, resize etc.
     const renderer = new THREE.WebGLRenderer();
     document.body.appendChild( renderer.domElement );
 
@@ -58,18 +57,18 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
     camera.lookAt( 0, 0, 0);
 
     const scene = new THREE.Scene();
-        
+    
+    //x,y,z lines
     const axesHelper = new THREE.AxesHelper( 2 );
     scene.add( axesHelper )
-    
-    {
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load('../static/globe1.jpg', render);
-        const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
-        const material = new THREE.MeshPhongMaterial({map: texture});
-        scene.add(new THREE.Mesh(geometry, material));
-    }
 
+    //main light
+    const color = 0xFFFFFF;
+    const intensity = 1;
+    const light = new THREE.AmbientLight(color, intensity);
+    scene.add(light);
+    
+    //responsive
     function resizeRendererToDisplaySize( renderer ) {
         const canvas = renderer.domElement;
         const pixelRatio = window.devicePixelRatio;
@@ -81,19 +80,28 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
         }
         return needResize;
     }
+///////////////////////////
 
-    const color = 0xFFFFFF;
-    const intensity = 1;
-    const light = new THREE.AmbientLight(color, intensity);
-    scene.add(light);
-
+//  Orbit Controls 
+    
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
     controls.minDistance = 1.2;
     controls.maxDistance = 5;
     controls.update();
+    
 
+//  Create globe, texture etc.
+    {
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load('../static/globe1.jpg', render);
+        const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+        const material = new THREE.MeshPhongMaterial({map: texture});
+        scene.add(new THREE.Mesh(geometry, material));
+    }
+
+//  Skybox
     {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
@@ -105,13 +113,8 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
           '../static/Starscape.png',
         ]);
         scene.background = texture;
-      }
+    }
 
-    // const light2 = new THREE.DirectionalLight(color, intensity);
-    // light2.position.set(0, 10, 0);
-    // light2.target.position.set(-5, 0, 0);
-    // scene.add(light2);
-    // scene.add(light2.target);
 
     const lonHelper = new THREE.Object3D();
     scene.add(lonHelper);
@@ -120,9 +123,7 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
     lonHelper.add(latHelper);
 
     const positionHelper = new THREE.Object3D();
-    // const positionHelper = cube
     
-
     latHelper.add(positionHelper);
 
 
@@ -189,6 +190,6 @@ import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitCo
     
     }
     requestAnimationFrame( render );
-    console.log("start")
+    console.log("Start")
 
 })();
