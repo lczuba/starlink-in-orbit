@@ -35,7 +35,7 @@ import * as UI from './ui.js';
             UI.addNewSatellite(sat);
             satellites.push(sat)
         })
-        // console.log(satellites[0]);
+        console.log(satellites[0]);
     }
     
     loadFile('../static/starlink.txt')
