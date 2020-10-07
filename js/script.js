@@ -35,7 +35,7 @@ import * as UI from './ui.js';
             UI.addNewSatellite(sat);
             satellites.push(sat)
         })
-        console.log(satellites[0]);
+        // console.log(satellites[0]);
     }
     
     loadFile('../static/starlink.txt')
@@ -80,6 +80,12 @@ import * as UI from './ui.js';
         }
         return needResize;
     }
+
+    const globals = {
+        clock: new THREE.Clock(),
+        updateTimer: 0,
+        setUpdateTime: 0.25,
+    }
 ///////////////////////////
 
 //  Orbit Controls 
@@ -91,7 +97,6 @@ import * as UI from './ui.js';
     controls.maxDistance = 5;
     controls.update();
     
-
 //  Create globe, texture etc.
     {
         const loader = new THREE.TextureLoader();
@@ -118,17 +123,13 @@ import * as UI from './ui.js';
 
     const lonHelper = new THREE.Object3D();
     scene.add(lonHelper);
-
     const latHelper = new THREE.Object3D();
     lonHelper.add(latHelper);
-
     const positionHelper = new THREE.Object3D();
-    
     latHelper.add(positionHelper);
 
-
     function updataSat(){
-        var geometry = new THREE.SphereBufferGeometry(0.005, 16, 16);
+        var geometry = new THREE.SphereBufferGeometry(0.005, 8, 8);
         var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
         
         for(let i = 0; i < satellites.length; i++) {
@@ -137,28 +138,11 @@ import * as UI from './ui.js';
                 scene.add( satellites[i].cube );
             }
         }
-
-        setInterval(function(){
-
-            for(let i = 0; i < satellites.length; i++) {
-
-                if(satellites[i].status === "ok"){
-
-                    let data = window.TLE.getLatLngObj(satellites[i].tle)
-                    // console.log(data);
-                    latHelper.rotation.x = THREE.MathUtils.degToRad(data.lat * -1);
-                    lonHelper.rotation.y = THREE.MathUtils.degToRad(90 + data.lng);
-                    positionHelper.position.z = 1 + (satellites[i].info.height / 6371);
-                    positionHelper.updateWorldMatrix(true, false);
-                    satellites[i].cube.position.set(0,0,0);
-                    satellites[i].cube.applyMatrix4(positionHelper.matrixWorld);
-                }
-            }
-
-        }, 300);
     }
 
     function moveSat() {
+       globals.updateTimer -= globals.clock.getDelta();
+        if(globals.updateTimer <= 0) {
             for(let i = 0; i < satellites.length; i++) {
 
                 if(satellites[i].status === "ok"){
@@ -173,11 +157,14 @@ import * as UI from './ui.js';
                     satellites[i].cube.applyMatrix4(positionHelper.matrixWorld);
                 }
             }
+            globals.updateTimer = globals.setUpdateTime;
+        }
     }
     
-    function render(time) {
-        time *= 0.001;
-        
+    function render() {
+
+        moveSat();
+
         if (resizeRendererToDisplaySize(renderer)) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
