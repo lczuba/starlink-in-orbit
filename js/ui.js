@@ -2,10 +2,7 @@ const satellitesHTML = document.getElementById('satellites');
 const satelliteInfoHTML = document.getElementById('satellite-info');
 const satelliteInfoBoxHTML = document.getElementById('satellite-info-box');
 const satelliteInfoUpHTML = document.getElementById('satellite-info-up');
-satelliteInfoUpHTML.addEventListener('click', function() {
-  satelliteInfoHTML.style.height = '0';
-  satelliteInfoHTML.style.opacity = '0';
-})
+
 
 const oneSatelliteHTML = document.createElement("p");
 oneSatelliteHTML.className = "child";
@@ -14,6 +11,14 @@ function addNewSatellite(satelliteObj) {
     const objSat = oneSatelliteHTML.cloneNode(true);;
     objSat.innerHTML = satelliteObj.name;
     objSat.addEventListener('click', function() {
+      satelliteObj.changeColor('#ff0000');
+
+      satelliteInfoUpHTML.addEventListener('click', function() {
+        satelliteInfoHTML.style.height = '0';
+        satelliteInfoHTML.style.opacity = '0';
+        satelliteObj.changeColor('#00ff00');
+      })
+
       satelliteInfoHTML.style.height = '15rem';
       satelliteInfoHTML.style.opacity = '1';
       satelliteInfoBoxHTML.innerHTML = 

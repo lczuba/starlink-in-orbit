@@ -129,15 +129,21 @@ import * as UI from './ui.js';
     latHelper.add(positionHelper);
 
     function updataSat(){
-        var geometry = new THREE.SphereBufferGeometry(0.005, 8, 8);
-        var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
         
         for(let i = 0; i < satellites.length; i++) {
             if(satellites[i].status === "ok"){
+                const geometry = new THREE.SphereBufferGeometry(0.005, 8, 8);
+                const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
                 satellites[i].cube = new THREE.Mesh( geometry, material );
+                satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
                 scene.add( satellites[i].cube );
             }
         }
+
+        // console.log(satellites[0].cube.material);
+       
+        // console.log(controls);
+
     }
 
     function moveSat() {
@@ -160,10 +166,20 @@ import * as UI from './ui.js';
             globals.updateTimer = globals.setUpdateTime;
         }
     }
-    
-    function render() {
 
+
+    // let angleLat = Math.sin(angleLng);
+    let angleLng = 0;
+    function render() {
+        // console.log("PolarAng: " + controls.getAzimuthalAngle());
         moveSat();
+
+        // camera.position.x = 5 * Math.cos(angleLng);
+        // camera.position.z = 5 * Math.sin(angleLng);
+        // angleLng += 0.01;
+
+        // camera.position.y = 5 * Math.sin(Math.sin(angleLng));
+        
 
         if (resizeRendererToDisplaySize(renderer)) {
             const canvas = renderer.domElement;
