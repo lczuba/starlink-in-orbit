@@ -132,17 +132,14 @@ import * as UI from './ui.js';
         
         for(let i = 0; i < satellites.length; i++) {
             if(satellites[i].status === "ok"){
-                const geometry = new THREE.SphereBufferGeometry(0.005, 8, 8);
-                const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-                satellites[i].cube = new THREE.Mesh( geometry, material );
+                const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
+                satellites[i].cube = new THREE.Sprite( spriteMaterial );
+                satellites[i].cube.scale.set(0.005, 0.005, 0.005)
+
                 satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
                 scene.add( satellites[i].cube );
             }
         }
-
-        // console.log(satellites[0].cube.material);
-       
-        // console.log(controls);
 
     }
 
