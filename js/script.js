@@ -140,6 +140,11 @@ import * as UI from './ui.js';
                 satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
                 satellites[i].moveToSatellite = function()  {
                     const data = window.TLE.getLatLngObj(satellites[i].tle);
+                    let currentData = {
+                        lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                        lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                        radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+                    };
                     globals.targetLat= data.lat,
                     globals.targetLng= data.lng,
                     globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
