@@ -10,7 +10,8 @@ import * as UI from './ui.js';
         setUpdateTime: 0.25,
 
         isMoveToTarget: false,
-        angleLatSpeed: 90, //per sec
+        moveToTargetTimeAnimation: 0.2, //s
+        setMoveToTargetTimeAnimation: 0.2, //s
         targetLat: null,
         targetLng: null,
         tagetHeight: null,
@@ -137,18 +138,9 @@ import * as UI from './ui.js';
                 satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
                 satellites[i].moveToSatellite = function()  {
                     const data = window.TLE.getLatLngObj(satellites[i].tle);
-                    let currentData = {
-                        lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-                        lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-                        radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-                    };
-
                     globals.targetLat= data.lat,
                     globals.targetLng= data.lng,
                     globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
-                    globals.angleLatSpeed = 90;
-
-                    if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
 
                     globals.isMoveToTarget = true;
                 }
@@ -177,17 +169,16 @@ import * as UI from './ui.js';
     }
 
     function moveToTarget() {
-        let currentData = {
-            lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-            lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-            radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-        };
-
-        if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTarget = false;
-        else if( globals.angleLatSpeed < 0 && currentData.lat <= globals.targetLat ) globals.isMoveToTarget = false;
-        else {
-            let deltaSpeed = ( globals.angleLatSpeed / 60 );
-            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaSpeed);
+        if(globals.moveToTargetTimeAnimation > 0) {
+            let currentData = {
+                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+            };
+            
+            let angleLatDisPerFPS = (globals.targetLat - currentData.lat) / globals.moveToTargetTimeAnimation / 1000;
+            console.log(angleLatDisPerFPS);
+            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + angleLatDisPerFPS);
             camera.position.y = currentData.radius * Math.sin(nextAngleLat);
 
             let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
@@ -195,15 +186,22 @@ import * as UI from './ui.js';
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
         }
+        else {
+            globals.isMoveToTarget = false;
+            globals.moveToTargetTimeAnimation = globals.setMoveToTargetTimeAnimation;
+        } 
+
+        globals.moveToTargetTimeAnimation -= globals.clock.getDelta();
     }
 
     function render() {
         globals.updateTimer -= globals.clock.getDelta();
-
         if ( globals.updateTimer <= 0 ) moveSat();
 
-        if( globals.isMoveToTarget ) moveToTarget()
-        
+        if( globals.isMoveToTarget ) {
+            moveToTarget()
+        }
+
         if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
