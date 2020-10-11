@@ -9,17 +9,11 @@ import * as UI from './ui.js';
         updateTimer: 0,
         setUpdateTime: 2,
 
-<<<<<<< HEAD
-        isMoveToTarget: false,
-        moveToTargetTimeAnimation: 0.2, //s
-        setMoveToTargetTimeAnimation: 0.2, //s
-=======
         isMoveToTargetLat: false,
         isMoveToTargetLng: false,
         animationSpeed: 180,
         angleLatSpeed: null, //per sec
         angleLngSpeed: null, //per sec
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
         targetLat: null,
         targetLng: null,
         tagetHeight: null,
@@ -149,8 +143,6 @@ import * as UI from './ui.js';
                     globals.targetLat= data.lat,
                     globals.targetLng= data.lng,
                     globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
-<<<<<<< HEAD
-=======
 
                     if( Math.abs(globals.targetLat - currentData.lat) > Math.abs(globals.targetLng - currentData.lng) ) {
                         const angle1 = Math.abs(globals.targetLat - currentData.lat)
@@ -168,7 +160,6 @@ import * as UI from './ui.js';
 
                     if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
                     if(globals.targetLng < currentData.lng) globals.angleLngSpeed *= -1;
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
 
                     globals.isMoveToTargetLat = true;
                     globals.isMoveToTargetLng = true;
@@ -198,19 +189,6 @@ import * as UI from './ui.js';
     }
 
     function moveToTarget() {
-<<<<<<< HEAD
-        if(globals.moveToTargetTimeAnimation > 0) {
-            let currentData = {
-                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-            };
-            
-            let angleLatDisPerFPS = (globals.targetLat - currentData.lat) / globals.moveToTargetTimeAnimation / 800;
-            let angleLngDisPerFPS = (globals.targetLng - currentData.lng) / globals.moveToTargetTimeAnimation / 800;
-            console.log(angleLngDisPerFPS);
-            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + angleLatDisPerFPS);
-=======
         let currentData = {
             lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
             lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
@@ -230,7 +208,6 @@ import * as UI from './ui.js';
             nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
             distanceXZ = currentData.radius * Math.cos(nextAngleLat);
 
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
             camera.position.y = currentData.radius * Math.sin(nextAngleLat);
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
@@ -242,55 +219,18 @@ import * as UI from './ui.js';
         else {
             nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
-<<<<<<< HEAD
-            let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + angleLngDisPerFPS);
-
-=======
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
             // console.log("2");       
         }
-<<<<<<< HEAD
-        else {
-            globals.isMoveToTarget = false;
-
-            let currentData = {
-                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-            };
-            globals.moveToTargetTimeAnimation = globals.setMoveToTargetTimeAnimation;
-            
-            // camera.position.y = currentData.radius * Math.sin(THREE.MathUtils.degToRad(globals.targetLat));
-            // let distanceXZ = currentData.radius * Math.cos(THREE.MathUtils.degToRad(globals.targetLat));
-            // camera.position.x = distanceXZ * Math.cos(THREE.MathUtils.degToRad(globals.targetLng));
-            // camera.position.z = distanceXZ * Math.sin(THREE.MathUtils.degToRad(globals.targetLng));
-
-            console.log("sat: " + globals.targetLat + "  " + globals.targetLng);
-            console.log("cam: " + currentData.lat + "  " + currentData.lng);
-        } 
-
-        globals.moveToTargetTimeAnimation -= globals.clock.getDelta();
-=======
-
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
     }
 
     function render() {
         globals.updateTimer -= globals.clock.getDelta();
         if ( globals.updateTimer <= 0 ) moveSat();
 
-<<<<<<< HEAD
-        if( globals.isMoveToTarget ) {
-            moveToTarget()
-        }
-
-=======
         if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget()
         
->>>>>>> 15d1c3e... fix animation moveToTarget, optimum
         if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
