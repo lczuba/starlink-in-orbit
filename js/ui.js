@@ -12,11 +12,15 @@ function addNewSatellite(satelliteObj) {
     objSat.innerHTML = satelliteObj.name;
     objSat.addEventListener('click', function() {
       satelliteObj.changeColor('#ff0000');
+      satelliteObj.moveToSatellite();
+
 
       satelliteInfoUpHTML.addEventListener('click', function() {
         satelliteInfoHTML.style.height = '0';
         satelliteInfoHTML.style.opacity = '0';
         satelliteObj.changeColor('#00ff00');
+        
+        // satelliteInfoUpHTML.removeEventListener('click', this);
       })
 
       satelliteInfoHTML.style.height = '15rem';

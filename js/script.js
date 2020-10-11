@@ -4,6 +4,17 @@ import * as UI from './ui.js';
 
 (function(){
     const satellites = [];
+    const globals = {
+        clock: new THREE.Clock(),
+        updateTimer: 0,
+        setUpdateTime: 0.25,
+
+        isMoveToTarget: false,
+        angleLatSpeed: 90, //per sec
+        targetLat: null,
+        targetLng: null,
+        tagetHeight: null,
+    }
 
     async function loadFile(url) {
         const req = await fetch(url)
@@ -81,11 +92,6 @@ import * as UI from './ui.js';
         return needResize;
     }
 
-    const globals = {
-        clock: new THREE.Clock(),
-        updateTimer: 0,
-        setUpdateTime: 0.25,
-    }
 ///////////////////////////
 
 //  Orbit Controls 
@@ -120,14 +126,6 @@ import * as UI from './ui.js';
         scene.background = texture;
     }
 
-
-    const lonHelper = new THREE.Object3D();
-    scene.add(lonHelper);
-    const latHelper = new THREE.Object3D();
-    lonHelper.add(latHelper);
-    const positionHelper = new THREE.Object3D();
-    latHelper.add(positionHelper);
-
     function updataSat(){
         
         for(let i = 0; i < satellites.length; i++) {
@@ -137,6 +135,23 @@ import * as UI from './ui.js';
                 satellites[i].cube.scale.set(0.005, 0.005, 0.005)
 
                 satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
+                satellites[i].moveToSatellite = function()  {
+                    const data = window.TLE.getLatLngObj(satellites[i].tle);
+                    let currentData = {
+                        lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                        lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                        radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+                    };
+
+                    globals.targetLat= data.lat,
+                    globals.targetLng= data.lng,
+                    globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
+                    globals.angleLatSpeed = 90;
+
+                    if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
+
+                    globals.isMoveToTarget = true;
+                }
                 scene.add( satellites[i].cube );
             }
         }
@@ -144,41 +159,52 @@ import * as UI from './ui.js';
     }
 
     function moveSat() {
-       globals.updateTimer -= globals.clock.getDelta();
-        if(globals.updateTimer <= 0) {
-            for(let i = 0; i < satellites.length; i++) {
+        for(let i = 0; i < satellites.length; i++) {
+            if(satellites[i].status === "ok"){
+                let data = window.TLE.getLatLngObj(satellites[i].tle)
+                let angleLat = THREE.MathUtils.degToRad(data.lat);
+                let height = 1 + (satellites[i].info.height / 6371);
 
-                if(satellites[i].status === "ok"){
+                satellites[i].cube.position.y = height * Math.sin(angleLat);
+                let radius = height * Math.cos(angleLat);
 
-                    let data = window.TLE.getLatLngObj(satellites[i].tle)
-                    // console.log(data);
-                    latHelper.rotation.x = THREE.MathUtils.degToRad(data.lat * -1);
-                    lonHelper.rotation.y = THREE.MathUtils.degToRad(90 + data.lng);
-                    positionHelper.position.z = 1 + (satellites[i].info.height / 6371);
-                    positionHelper.updateWorldMatrix(true, false);
-                    satellites[i].cube.position.set(0,0,0);
-                    satellites[i].cube.applyMatrix4(positionHelper.matrixWorld);
-                }
+                let angleLng = THREE.MathUtils.degToRad(data.lng);
+                satellites[i].cube.position.x = radius * Math.cos(angleLng);
+                satellites[i].cube.position.z = radius * Math.sin(angleLng);
             }
-            globals.updateTimer = globals.setUpdateTime;
+        }
+        globals.updateTimer = globals.setUpdateTime;
+    }
+
+    function moveToTarget() {
+        let currentData = {
+            lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+            lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+            radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+        };
+
+        if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTarget = false;
+        else if( globals.angleLatSpeed < 0 && currentData.lat <= globals.targetLat ) globals.isMoveToTarget = false;
+        else {
+            let deltaSpeed = ( globals.angleLatSpeed / 60 );
+            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaSpeed);
+            camera.position.y = currentData.radius * Math.sin(nextAngleLat);
+
+            let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
+            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
+            camera.position.x = distanceXZ * Math.cos(nextAngleLng);
+            camera.position.z = distanceXZ * Math.sin(nextAngleLng);
         }
     }
 
-
-    // let angleLat = Math.sin(angleLng);
-    let angleLng = 0;
     function render() {
-        // console.log("PolarAng: " + controls.getAzimuthalAngle());
-        moveSat();
+        globals.updateTimer -= globals.clock.getDelta();
 
-        // camera.position.x = 5 * Math.cos(angleLng);
-        // camera.position.z = 5 * Math.sin(angleLng);
-        // angleLng += 0.01;
+        if ( globals.updateTimer <= 0 ) moveSat();
 
-        // camera.position.y = 5 * Math.sin(Math.sin(angleLng));
+        if( globals.isMoveToTarget ) moveToTarget()
         
-
-        if (resizeRendererToDisplaySize(renderer)) {
+        if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
@@ -187,7 +213,6 @@ import * as UI from './ui.js';
         controls.update();
         renderer.render( scene, camera );
         requestAnimationFrame( render );
-    
     }
     requestAnimationFrame( render );
     console.log("Start")
