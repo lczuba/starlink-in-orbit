@@ -7,7 +7,7 @@ import * as UI from './ui.js';
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
-        setUpdateTime: 0.25,
+        setUpdateTime: 2,
 
         isMoveToTarget: false,
         moveToTargetTimeAnimation: 0.2, //s
@@ -176,19 +176,35 @@ import * as UI from './ui.js';
                 radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
             };
             
-            let angleLatDisPerFPS = (globals.targetLat - currentData.lat) / globals.moveToTargetTimeAnimation / 1000;
-            console.log(angleLatDisPerFPS);
+            let angleLatDisPerFPS = (globals.targetLat - currentData.lat) / globals.moveToTargetTimeAnimation / 800;
+            let angleLngDisPerFPS = (globals.targetLng - currentData.lng) / globals.moveToTargetTimeAnimation / 800;
+            console.log(angleLngDisPerFPS);
             let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + angleLatDisPerFPS);
             camera.position.y = currentData.radius * Math.sin(nextAngleLat);
 
             let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
+            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + angleLngDisPerFPS);
+
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
         }
         else {
             globals.isMoveToTarget = false;
+
+            let currentData = {
+                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+            };
             globals.moveToTargetTimeAnimation = globals.setMoveToTargetTimeAnimation;
+            
+            // camera.position.y = currentData.radius * Math.sin(THREE.MathUtils.degToRad(globals.targetLat));
+            // let distanceXZ = currentData.radius * Math.cos(THREE.MathUtils.degToRad(globals.targetLat));
+            // camera.position.x = distanceXZ * Math.cos(THREE.MathUtils.degToRad(globals.targetLng));
+            // camera.position.z = distanceXZ * Math.sin(THREE.MathUtils.degToRad(globals.targetLng));
+
+            console.log("sat: " + globals.targetLat + "  " + globals.targetLng);
+            console.log("cam: " + currentData.lat + "  " + currentData.lng);
         } 
 
         globals.moveToTargetTimeAnimation -= globals.clock.getDelta();
