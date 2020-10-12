@@ -7,7 +7,7 @@ import * as UI from './ui.js';
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
-        setUpdateTime: 2,
+        setUpdateTime: 1,
 
         isMoveToTargetLat: false,
         isMoveToTargetLng: false,
@@ -174,7 +174,6 @@ import * as UI from './ui.js';
                 scene.add( satellites[i].cube );
             }
         }
-
     }
 
     function moveSat() {
@@ -193,6 +192,7 @@ import * as UI from './ui.js';
             }
         }
         globals.updateTimer = globals.setUpdateTime;
+        requestRenderIfNotRequested();
     }
 
     function moveToTarget() {
@@ -200,7 +200,7 @@ import * as UI from './ui.js';
         let timeFraction = globals.timeAnimationClock.elapsedTime / globals.timeAnimation;
         if (timeFraction > 1) timeFraction = 1;
         let fun = Math.sin(Math.acos(timeFraction / 1.15));
-       
+        // let fun = 1;
         let currentData = {
             lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
             lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
@@ -233,14 +233,23 @@ import * as UI from './ui.js';
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
         }
+        requestRenderIfNotRequested();
     }
 
-    function render() {
-        globals.updateTimer -= globals.clock.getDelta();
-        if ( globals.updateTimer <= 0 ) moveSat();
+    let renderRequested = false;
 
-        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget()
+    setInterval(function() {
+        globals.updateTimer -= globals.clock.getDelta();
         
+        //if camera is going to target don't update position of 'million' satelite
+        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget() 
+        else {if ( globals.updateTimer <= 0 ) moveSat();}
+
+    }, 1000/120);
+
+    function render() {
+        renderRequested = false;
+
         if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -249,9 +258,18 @@ import * as UI from './ui.js';
 
         controls.update();
         renderer.render( scene, camera );
-        requestAnimationFrame( render );
     }
-    requestAnimationFrame( render );
+    render();
+
+    function requestRenderIfNotRequested() {
+        if(!renderRequested) {
+            renderRequested = true;
+            requestAnimationFrame( render );
+        }
+    }
+
+    controls.addEventListener('change', requestRenderIfNotRequested);
+    window.addEventListener('resize', requestRenderIfNotRequested)
     console.log("Start")
 
 })();
