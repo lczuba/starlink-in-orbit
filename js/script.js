@@ -11,9 +11,11 @@ import * as UI from './ui.js';
 
         isMoveToTargetLat: false,
         isMoveToTargetLng: false,
-        animationSpeed: 180,
+        animationSpeed: 100,
         angleLatSpeed: null, //per sec
         angleLngSpeed: null, //per sec
+        timeAnimation: null,
+        timeAnimationClock: null,
         targetLat: null,
         targetLng: null,
         tagetHeight: null,
@@ -49,7 +51,6 @@ import * as UI from './ui.js';
             UI.addNewSatellite(sat);
             satellites.push(sat)
         })
-        console.log(satellites[0]);
     }
     
     loadFile('../static/starlink.txt')
@@ -152,15 +153,15 @@ import * as UI from './ui.js';
                     if( Math.abs(globals.targetLat - currentData.lat) > Math.abs(globals.targetLng - currentData.lng) ) {
                         const angle1 = Math.abs(globals.targetLat - currentData.lat)
                         globals.angleLatSpeed = globals.animationSpeed;
-                        const timeAnimation = angle1 / globals.animationSpeed;
+                        globals.timeAnimation = angle1 / globals.animationSpeed;
                         const angle2 = Math.abs(globals.targetLng - currentData.lng);
-                        globals.angleLngSpeed = angle2 / timeAnimation;
+                        globals.angleLngSpeed = angle2 / globals.timeAnimation;
                     }else {
                         const angle1 = Math.abs(globals.targetLng - currentData.lng); 
                         globals.angleLngSpeed = globals.animationSpeed;
-                        const timeAnimation = angle1 / globals.animationSpeed;
+                        globals.timeAnimation = angle1 / globals.animationSpeed;
                         const angle2 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = angle2 / timeAnimation;
+                        globals.angleLatSpeed = angle2 / globals.timeAnimation;
                     }
 
                     if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
@@ -168,6 +169,7 @@ import * as UI from './ui.js';
 
                     globals.isMoveToTargetLat = true;
                     globals.isMoveToTargetLng = true;
+                    globals.timeAnimationClock = new THREE.Clock();
                 }
                 scene.add( satellites[i].cube );
             }
@@ -194,17 +196,22 @@ import * as UI from './ui.js';
     }
 
     function moveToTarget() {
+        let delta = globals.timeAnimationClock.getDelta()
+        let timeFraction = globals.timeAnimationClock.elapsedTime / globals.timeAnimation;
+        if (timeFraction > 1) timeFraction = 1;
+        let fun = Math.sin(Math.acos(timeFraction / 1.15));
+       
         let currentData = {
             lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
             lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
             radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
         };
 
-        let deltaLatSpeed = ( globals.angleLatSpeed / 200);
+        let deltaLatSpeed = ( globals.angleLatSpeed * delta * fun);
         let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
 
         let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-        let deltaLngSpeed = ( globals.angleLngSpeed / 200);
+        let deltaLngSpeed = ( globals.angleLngSpeed * delta * fun);
         let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
 
         if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTargetLat = false;
@@ -216,7 +223,6 @@ import * as UI from './ui.js';
             camera.position.y = currentData.radius * Math.sin(nextAngleLat);
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-            // console.log("1");
         }
 
         if( globals.angleLngSpeed > 0 && currentData.lng >= globals.targetLng ) globals.isMoveToTargetLng = false;
@@ -225,8 +231,7 @@ import * as UI from './ui.js';
             nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-            // console.log("2");       
+            camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
         }
     }
 
