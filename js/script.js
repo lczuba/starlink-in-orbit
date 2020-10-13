@@ -1,5 +1,6 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import {SVGLoader} from '../node_modules/three/examples/jsm/loaders/SVGLoader.js';
 import * as UI from './ui.js';
 
 (function(){
@@ -65,8 +66,8 @@ import * as UI from './ui.js';
 
     const fov = 45;
     const aspect = 2;
-    const near = 0.1;
-    const far = 5;
+    const near = 0.01;
+    const far = 50;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
@@ -74,14 +75,15 @@ import * as UI from './ui.js';
     const scene = new THREE.Scene();
     
     //x,y,z lines
-    const axesHelper = new THREE.AxesHelper( 2 );
-    scene.add( axesHelper )
+    // const axesHelper = new THREE.AxesHelper( 2 );
+    // scene.add( axesHelper )
 
     //main light
     const color = 0xFFFFFF;
-    const intensity = 1;
+    const intensity = 2;
     const light = new THREE.AmbientLight(color, intensity);
     scene.add(light);
+    
     
     //responsive
     function resizeRendererToDisplaySize( renderer ) {
@@ -103,29 +105,55 @@ import * as UI from './ui.js';
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
-    controls.minDistance = 1.2;
+    controls.minDistance = 1.3;
     controls.maxDistance = 5;
     controls.update();
     
 //  Create globe, texture etc.
-    {
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load('../static/globe1.jpg', render);
+
+    {  
+        const loader = new THREE.TextureLoader;
+        const texture = loader.load('../static/hologram-map.svg', function ( data ) {
+            data.image.width *= 8;
+            data.image.height *= 8;
+        });
+
         const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
-        const material = new THREE.MeshPhongMaterial({map: texture});
-        scene.add(new THREE.Mesh(geometry, material));
+        
+        const material1 = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.FrontSide,
+            flatShading: true,
+            transparent: true,
+            opacity: 1
+          });
+
+        const material2 = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            flatShading: true,
+            transparent: true,
+            opacity: 0.8
+          });
+        
+        const mesh = new THREE.Mesh(geometry, material1);
+        mesh.renderOrder = 2;
+        scene.add(mesh);
+        const mesh2 = new THREE.Mesh(geometry, material2);
+        scene.add(mesh2);
+        
     }
 
 //  Skybox
     {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
         ]);
         scene.background = texture;
     }
