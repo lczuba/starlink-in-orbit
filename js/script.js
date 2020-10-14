@@ -22,6 +22,19 @@ import * as UI from './ui.js';
         tagetHeight: null,
     }
 
+    const moveToTargetAnimation = {
+        isMoveToTargetLat: false,
+        isMoveToTargetLng: false,
+        animationSpeed: 100,
+        angleLatSpeed: null, //per sec
+        angleLngSpeed: null, //per sec
+        timeAnimation: null,
+        timeAnimationClock: null,
+        targetLat: null,
+        targetLng: null,
+        tagetHeight: null,
+    }
+
     async function loadFile(url) {
         const req = await fetch(url)
         return req.text();
@@ -174,30 +187,30 @@ import * as UI from './ui.js';
                         lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
                         radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
                     };
-                    globals.targetLat= data.lat,
-                    globals.targetLng= data.lng,
-                    globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
+                    moveToTargetAnimation.targetLat= data.lat,
+                    moveToTargetAnimation.targetLng= data.lng,
+                    moveToTargetAnimation.tagetHeight= 1 + (satellites[i].info.height / 6371);
 
-                    if( Math.abs(globals.targetLat - currentData.lat) > Math.abs(globals.targetLng - currentData.lng) ) {
-                        const angle1 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = globals.animationSpeed;
-                        globals.timeAnimation = angle1 / globals.animationSpeed;
-                        const angle2 = Math.abs(globals.targetLng - currentData.lng);
-                        globals.angleLngSpeed = angle2 / globals.timeAnimation;
+                    if( Math.abs(moveToTargetAnimation.targetLat - currentData.lat) > Math.abs(moveToTargetAnimation.targetLng - currentData.lng) ) {
+                        const angle1 = Math.abs(moveToTargetAnimation.targetLat - currentData.lat)
+                        moveToTargetAnimation.angleLatSpeed = moveToTargetAnimation.animationSpeed;
+                        moveToTargetAnimation.timeAnimation = angle1 / moveToTargetAnimation.animationSpeed;
+                        const angle2 = Math.abs(moveToTargetAnimation.targetLng - currentData.lng);
+                        moveToTargetAnimation.angleLngSpeed = angle2 / moveToTargetAnimation.timeAnimation;
                     }else {
-                        const angle1 = Math.abs(globals.targetLng - currentData.lng); 
-                        globals.angleLngSpeed = globals.animationSpeed;
-                        globals.timeAnimation = angle1 / globals.animationSpeed;
-                        const angle2 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = angle2 / globals.timeAnimation;
+                        const angle1 = Math.abs(moveToTargetAnimation.targetLng - currentData.lng); 
+                        moveToTargetAnimation.angleLngSpeed = moveToTargetAnimation.animationSpeed;
+                        moveToTargetAnimation.timeAnimation = angle1 / moveToTargetAnimation.animationSpeed;
+                        const angle2 = Math.abs(moveToTargetAnimation.targetLat - currentData.lat)
+                        moveToTargetAnimation.angleLatSpeed = angle2 / moveToTargetAnimation.timeAnimation;
                     }
 
-                    if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
-                    if(globals.targetLng < currentData.lng) globals.angleLngSpeed *= -1;
+                    if(moveToTargetAnimation.targetLat < currentData.lat) moveToTargetAnimation.angleLatSpeed *= -1;
+                    if(moveToTargetAnimation.targetLng < currentData.lng) moveToTargetAnimation.angleLngSpeed *= -1;
 
-                    globals.isMoveToTargetLat = true;
-                    globals.isMoveToTargetLng = true;
-                    globals.timeAnimationClock = new THREE.Clock();
+                    moveToTargetAnimation.isMoveToTargetLat = true;
+                    moveToTargetAnimation.isMoveToTargetLng = true;
+                    moveToTargetAnimation.timeAnimationClock = new THREE.Clock();
                 }
                 scene.add( satellites[i].cube );
             }
@@ -224,8 +237,8 @@ import * as UI from './ui.js';
     }
 
     function moveToTarget() {
-        let delta = globals.timeAnimationClock.getDelta()
-        let timeFraction = globals.timeAnimationClock.elapsedTime / globals.timeAnimation;
+        let delta = moveToTargetAnimation.timeAnimationClock.getDelta()
+        let timeFraction = moveToTargetAnimation.timeAnimationClock.elapsedTime / moveToTargetAnimation.timeAnimation;
         if (timeFraction > 1) timeFraction = 1;
         let fun = Math.sin(Math.acos(timeFraction / 1.15));
         // let fun = 1;
@@ -235,15 +248,15 @@ import * as UI from './ui.js';
             radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
         };
 
-        let deltaLatSpeed = ( globals.angleLatSpeed * delta * fun);
+        let deltaLatSpeed = ( moveToTargetAnimation.angleLatSpeed * delta * fun);
         let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
 
         let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-        let deltaLngSpeed = ( globals.angleLngSpeed * delta * fun);
+        let deltaLngSpeed = ( moveToTargetAnimation.angleLngSpeed * delta * fun);
         let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
 
-        if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTargetLat = false;
-        else if( globals.angleLatSpeed < 0 && currentData.lat <= globals.targetLat ) globals.isMoveToTargetLat = false;
+        if( moveToTargetAnimation.angleLatSpeed > 0 && currentData.lat >= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
+        else if( moveToTargetAnimation.angleLatSpeed < 0 && currentData.lat <= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
         else {
             nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
             distanceXZ = currentData.radius * Math.cos(nextAngleLat);
@@ -253,8 +266,8 @@ import * as UI from './ui.js';
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
         }
 
-        if( globals.angleLngSpeed > 0 && currentData.lng >= globals.targetLng ) globals.isMoveToTargetLng = false;
-        else if( globals.angleLngSpeed < 0 && currentData.lng <= globals.targetLng ) globals.isMoveToTargetLng = false;
+        if( moveToTargetAnimation.angleLngSpeed > 0 && currentData.lng >= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
+        else if( moveToTargetAnimation.angleLngSpeed < 0 && currentData.lng <= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
         else {
             nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
@@ -270,7 +283,7 @@ import * as UI from './ui.js';
         globals.updateTimer -= globals.clock.getDelta();
         
         //if camera is going to target don't update position of 'million' satelite
-        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget() 
+        if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTarget() 
         else {if ( globals.updateTimer <= 0 ) moveSat();}
 
     }, 1000/120);
