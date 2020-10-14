@@ -69,7 +69,7 @@ import { Satellite } from './satellite.js';
     const fov = 45;
     const aspect = 2;
     const near = 0.1;
-    const far = 5;
+    const far = 50;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
@@ -116,27 +116,53 @@ import { Satellite } from './satellite.js';
     controls.update();
     
 //  Create globe, texture etc.
-    {
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load('../static/globe1.jpg', render);
-        const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
-        const material = new THREE.MeshPhongMaterial({map: texture});
-        scene.add(new THREE.Mesh(geometry, material));
-    }
+
+{  
+    const loader = new THREE.TextureLoader;
+    const texture = loader.load('../static/hologram-map.svg', function ( data ) {
+        data.image.width *= 8;
+        data.image.height *= 8;
+    });
+
+    const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+    
+    const material1 = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.FrontSide,
+        flatShading: true,
+        transparent: true,
+        opacity: 1
+      });
+
+    const material2 = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.BackSide,
+        flatShading: true,
+        transparent: true,
+        opacity: 0.8
+      });
+    
+    const mesh = new THREE.Mesh(geometry, material1);
+    mesh.renderOrder = 2;
+    scene.add(mesh);
+    const mesh2 = new THREE.Mesh(geometry, material2);
+    scene.add(mesh2);
+    
+}
 
 //  Skybox
-    {
-        const loader = new THREE.CubeTextureLoader();
-        const texture = loader.load([
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-          '../static/Starscape.png',
-        ]);
-        scene.background = texture;
-    }
+{
+    const loader = new THREE.CubeTextureLoader();
+    const texture = loader.load([
+      '../static/space_bk.png',
+      '../static/space_bk.png',
+      '../static/space_bk.png',
+      '../static/space_bk.png',
+      '../static/space_bk.png',
+      '../static/space_bk.png',
+    ]);
+    scene.background = texture;
+}
 
     function updataSat(){
         
