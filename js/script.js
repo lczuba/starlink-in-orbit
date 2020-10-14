@@ -1,9 +1,11 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import * as UI from './ui.js';
+import { Satellite } from './satellite.js';
 
 (function(){
     const satellites = [];
+
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
@@ -49,7 +51,9 @@ import * as UI from './ui.js';
             UI.addNewSatellite(sat);
             satellites.push(sat)
         })
-        console.log(satellites[0]);
+
+        let sat1 = new Satellite(data[1]);
+        console.log(sat1);
     }
     
     loadFile('../static/starlink.txt')
@@ -72,15 +76,20 @@ import * as UI from './ui.js';
 
     const scene = new THREE.Scene();
     
-    //x,y,z lines
+    // x,y,z lines
     const axesHelper = new THREE.AxesHelper( 2 );
     scene.add( axesHelper )
 
     //main light
     const color = 0xFFFFFF;
-    const intensity = 1;
-    const light = new THREE.AmbientLight(color, intensity);
+    const intensity = 2;
+    let light = new THREE.AmbientLight(color, intensity);
     scene.add(light);
+
+
+    // light = new THREE.PointLight(color, 2);
+    // light.position.set(0, 0, 0);
+    // scene.add(light);
     
     //responsive
     function resizeRendererToDisplaySize( renderer ) {
@@ -172,6 +181,40 @@ import * as UI from './ui.js';
                 scene.add( satellites[i].cube );
             }
         }
+
+        const satOrbit = window.TLE.getGroundTracks({
+            tle: satellites[5].tle,
+            isLngLatFormat: true,
+            startTimeMS: 1502342329860,
+
+        }).then( function(satOrbit) {
+            let material = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+            let points = [];
+
+            for(let n=0; n<3; n++) {
+                for(let i = 0; i < satOrbit[n].length; i++) {
+                    let orbitPointData = {
+                        lat: THREE.MathUtils.degToRad(satOrbit[n][i][1]),
+                        lng: THREE.MathUtils.degToRad(satOrbit[n][i][0]),
+                        height: 1 + (satellites[0].info.height / 6371),
+                    };
+                    
+                    let y = orbitPointData.height * Math.sin(orbitPointData.lat);
+                    let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
+                    let x = radius * Math.cos(orbitPointData.lng);
+                    let z = radius * Math.sin(orbitPointData.lng);
+    
+                    points.push( new THREE.Vector3( x, y, z) );
+                }
+            }
+            
+
+        
+            let geometry = new THREE.BufferGeometry().setFromPoints( points);
+            let line = new THREE.Line( geometry, material);
+            scene.add(line);
+            
+        })
 
     }
 
