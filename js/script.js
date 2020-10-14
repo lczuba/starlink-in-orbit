@@ -1,5 +1,6 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import {SVGLoader} from '../node_modules/three/examples/jsm/loaders/SVGLoader.js';
 import * as UI from './ui.js';
 import { Satellite } from './satellite.js';
 
@@ -9,13 +10,15 @@ import { Satellite } from './satellite.js';
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
-        setUpdateTime: 2,
+        setUpdateTime: 1,
 
         isMoveToTargetLat: false,
         isMoveToTargetLng: false,
-        animationSpeed: 180,
+        animationSpeed: 100,
         angleLatSpeed: null, //per sec
         angleLngSpeed: null, //per sec
+        timeAnimation: null,
+        timeAnimationClock: null,
         targetLat: null,
         targetLng: null,
         tagetHeight: null,
@@ -52,8 +55,6 @@ import { Satellite } from './satellite.js';
             satellites.push(sat)
         })
 
-        let sat1 = new Satellite(data[1]);
-        console.log(sat1);
     }
     
     loadFile('../static/starlink.txt')
@@ -76,6 +77,7 @@ import { Satellite } from './satellite.js';
 
     const scene = new THREE.Scene();
     
+
     // x,y,z lines
     const axesHelper = new THREE.AxesHelper( 2 );
     scene.add( axesHelper )
@@ -86,11 +88,6 @@ import { Satellite } from './satellite.js';
     let light = new THREE.AmbientLight(color, intensity);
     scene.add(light);
 
-
-    // light = new THREE.PointLight(color, 2);
-    // light.position.set(0, 0, 0);
-    // scene.add(light);
-    
     //responsive
     function resizeRendererToDisplaySize( renderer ) {
         const canvas = renderer.domElement;
@@ -111,58 +108,59 @@ import { Satellite } from './satellite.js';
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
-    controls.minDistance = 1.2;
+    controls.minDistance = 1.3;
     controls.maxDistance = 5;
     controls.update();
     
 //  Create globe, texture etc.
 
-{  
-    const loader = new THREE.TextureLoader;
-    const texture = loader.load('../static/hologram-map.svg', function ( data ) {
-        data.image.width *= 8;
-        data.image.height *= 8;
-    });
 
-    const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
-    
-    const material1 = new THREE.MeshPhongMaterial({
-        map: texture,
-        side: THREE.FrontSide,
-        flatShading: true,
-        transparent: true,
-        opacity: 1
-      });
+    {  
+        const loader = new THREE.TextureLoader;
+        const texture = loader.load('../static/hologram-map.svg', function ( data ) {
+            data.image.width *= 8;
+            data.image.height *= 8;
+        });
 
-    const material2 = new THREE.MeshPhongMaterial({
-        map: texture,
-        side: THREE.BackSide,
-        flatShading: true,
-        transparent: true,
-        opacity: 0.8
-      });
-    
-    const mesh = new THREE.Mesh(geometry, material1);
-    mesh.renderOrder = 2;
-    scene.add(mesh);
-    const mesh2 = new THREE.Mesh(geometry, material2);
-    scene.add(mesh2);
-    
-}
+        const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+        
+        const material1 = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.FrontSide,
+            flatShading: true,
+            transparent: true,
+            opacity: 1
+          });
+
+        const material2 = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            flatShading: true,
+            transparent: true,
+            opacity: 0.8
+          });
+        
+        const mesh = new THREE.Mesh(geometry, material1);
+        mesh.renderOrder = 2;
+        scene.add(mesh);
+        const mesh2 = new THREE.Mesh(geometry, material2);
+        scene.add(mesh2);
+        
+    }
 
 //  Skybox
-{
-    const loader = new THREE.CubeTextureLoader();
-    const texture = loader.load([
-      '../static/space_bk.png',
-      '../static/space_bk.png',
-      '../static/space_bk.png',
-      '../static/space_bk.png',
-      '../static/space_bk.png',
-      '../static/space_bk.png',
-    ]);
-    scene.background = texture;
-}
+    {
+        const loader = new THREE.CubeTextureLoader();
+        const texture = loader.load([
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+          '../static/space_bk.png',
+        ]);
+        scene.background = texture;
+    }
 
     function updataSat(){
         
@@ -187,15 +185,15 @@ import { Satellite } from './satellite.js';
                     if( Math.abs(globals.targetLat - currentData.lat) > Math.abs(globals.targetLng - currentData.lng) ) {
                         const angle1 = Math.abs(globals.targetLat - currentData.lat)
                         globals.angleLatSpeed = globals.animationSpeed;
-                        const timeAnimation = angle1 / globals.animationSpeed;
+                        globals.timeAnimation = angle1 / globals.animationSpeed;
                         const angle2 = Math.abs(globals.targetLng - currentData.lng);
-                        globals.angleLngSpeed = angle2 / timeAnimation;
+                        globals.angleLngSpeed = angle2 / globals.timeAnimation;
                     }else {
                         const angle1 = Math.abs(globals.targetLng - currentData.lng); 
                         globals.angleLngSpeed = globals.animationSpeed;
-                        const timeAnimation = angle1 / globals.animationSpeed;
+                        globals.timeAnimation = angle1 / globals.animationSpeed;
                         const angle2 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = angle2 / timeAnimation;
+                        globals.angleLatSpeed = angle2 / globals.timeAnimation;
                     }
 
                     if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
@@ -203,6 +201,7 @@ import { Satellite } from './satellite.js';
 
                     globals.isMoveToTargetLat = true;
                     globals.isMoveToTargetLng = true;
+                    globals.timeAnimationClock = new THREE.Clock();
                 }
                 scene.add( satellites[i].cube );
             }
@@ -242,6 +241,7 @@ import { Satellite } from './satellite.js';
             
         })
 
+
     }
 
     function moveSat() {
@@ -260,20 +260,26 @@ import { Satellite } from './satellite.js';
             }
         }
         globals.updateTimer = globals.setUpdateTime;
+        requestRenderIfNotRequested();
     }
 
     function moveToTarget() {
+        let delta = globals.timeAnimationClock.getDelta()
+        let timeFraction = globals.timeAnimationClock.elapsedTime / globals.timeAnimation;
+        if (timeFraction > 1) timeFraction = 1;
+        let fun = Math.sin(Math.acos(timeFraction / 1.15));
+        // let fun = 1;
         let currentData = {
             lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
             lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
             radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
         };
 
-        let deltaLatSpeed = ( globals.angleLatSpeed / 200);
+        let deltaLatSpeed = ( globals.angleLatSpeed * delta * fun);
         let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
 
         let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-        let deltaLngSpeed = ( globals.angleLngSpeed / 200);
+        let deltaLngSpeed = ( globals.angleLngSpeed * delta * fun);
         let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
 
         if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTargetLat = false;
@@ -285,7 +291,6 @@ import { Satellite } from './satellite.js';
             camera.position.y = currentData.radius * Math.sin(nextAngleLat);
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
             camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-            // console.log("1");
         }
 
         if( globals.angleLngSpeed > 0 && currentData.lng >= globals.targetLng ) globals.isMoveToTargetLng = false;
@@ -294,17 +299,25 @@ import { Satellite } from './satellite.js';
             nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
             camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-            // console.log("2");       
+            camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
         }
+        requestRenderIfNotRequested();
     }
 
-    function render() {
-        globals.updateTimer -= globals.clock.getDelta();
-        if ( globals.updateTimer <= 0 ) moveSat();
+    let renderRequested = false;
 
-        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget()
+    setInterval(function() {
+        globals.updateTimer -= globals.clock.getDelta();
         
+        //if camera is going to target don't update position of 'million' satelite
+        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget() 
+        else {if ( globals.updateTimer <= 0 ) moveSat();}
+
+    }, 1000/120);
+
+    function render() {
+        renderRequested = false;
+
         if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -313,9 +326,18 @@ import { Satellite } from './satellite.js';
 
         controls.update();
         renderer.render( scene, camera );
-        requestAnimationFrame( render );
     }
-    requestAnimationFrame( render );
+    render();
+
+    function requestRenderIfNotRequested() {
+        if(!renderRequested) {
+            renderRequested = true;
+            requestAnimationFrame( render );
+        }
+    }
+
+    controls.addEventListener('change', requestRenderIfNotRequested);
+    window.addEventListener('resize', requestRenderIfNotRequested)
     console.log("Start")
 
 })();
