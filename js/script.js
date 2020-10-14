@@ -10,18 +10,9 @@ import { Satellite } from './satellite.js';
         clock: new THREE.Clock(),
         updateTimer: 0,
         setUpdateTime: 1,
-
-        isMoveToTargetLat: false,
-        isMoveToTargetLng: false,
-        animationSpeed: 100,
-        angleLatSpeed: null, //per sec
-        angleLngSpeed: null, //per sec
-        timeAnimation: null,
-        timeAnimationClock: null,
-        targetLat: null,
-        targetLng: null,
-        tagetHeight: null,
     }
+
+    
 
     async function loadFile(url) {
         const req = await fetch(url)
@@ -41,8 +32,11 @@ import { Satellite } from './satellite.js';
     function createSatellitesObj(data) {
         data.forEach((tle) => {
             let sat = new Satellite(tle);
-            if(sat.isValid) scene.add( sat.mesh );
-            // UI.addNewSatellite(sat);
+            if(sat.isValid) {
+                sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
+                scene.add( sat.mesh );
+            } 
+            UI.addNewSatellite(sat);
             satellites.push(sat);
         })
         requestRenderIfNotRequested();
@@ -55,19 +49,20 @@ import { Satellite } from './satellite.js';
 ////////////////////////////////////////////////////////////////////////////////////////
 //  Main properties of scene, render, resize etc.
     const renderer = new THREE.WebGLRenderer();
+    let renderRequested = false;
     document.body.appendChild( renderer.domElement );
 
     const fov = 45;
     const aspect = 2;
     const near = 0.1;
-    const far = 50;
+    const far = 500;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
 
     const scene = new THREE.Scene();
     
-    // // x,y,z lines
+    // x,y,z lines
     // const axesHelper = new THREE.AxesHelper( 2 );
     // scene.add( axesHelper )
 
@@ -98,7 +93,7 @@ import { Satellite } from './satellite.js';
     controls.enableDamping = true;
     controls.enablePan = false;
     controls.minDistance = 1.3;
-    controls.maxDistance = 5;
+    controls.maxDistance = 500;
     controls.update();
     
 //  Create globe, texture etc.
@@ -150,44 +145,6 @@ import { Satellite } from './satellite.js';
         scene.background = texture;
     }
 
-    function updataSat(){
-        
-        // const satOrbit = window.TLE.getGroundTracks({
-        //     tle: satellites[5].tle,
-        //     isLngLatFormat: true,
-        //     startTimeMS: 1502342329860,
-
-        // }).then( function(satOrbit) {
-        //     let material = new THREE.LineBasicMaterial( {color: 0x0000ff} );
-        //     let points = [];
-
-        //     for(let n=0; n<3; n++) {
-        //         for(let i = 0; i < satOrbit[n].length; i++) {
-        //             let orbitPointData = {
-        //                 lat: THREE.MathUtils.degToRad(satOrbit[n][i][1]),
-        //                 lng: THREE.MathUtils.degToRad(satOrbit[n][i][0]),
-        //                 height: 1 + (satellites[0].info.height / 6371),
-        //             };
-                    
-        //             let y = orbitPointData.height * Math.sin(orbitPointData.lat);
-        //             let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
-        //             let x = radius * Math.cos(orbitPointData.lng);
-        //             let z = radius * Math.sin(orbitPointData.lng);
-    
-        //             points.push( new THREE.Vector3( x, y, z) );
-        //         }
-        //     }
-            
-
-        
-        //     let geometry = new THREE.BufferGeometry().setFromPoints( points);
-        //     let line = new THREE.Line( geometry, material);
-        //     scene.add(line);
-            
-        // })
-        
-    }
-
     function moveSat() {
         satellites.forEach((sat) => {
             sat.updateLatLng();
@@ -196,56 +153,70 @@ import { Satellite } from './satellite.js';
         globals.updateTimer = globals.setUpdateTime;
     }
 
-    function moveToTarget() {
-        let delta = globals.timeAnimationClock.getDelta()
-        let timeFraction = globals.timeAnimationClock.elapsedTime / globals.timeAnimation;
-        if (timeFraction > 1) timeFraction = 1;
-        let fun = Math.sin(Math.acos(timeFraction / 1.15));
-        // let fun = 1;
-        let currentData = {
-            lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-            lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-            radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-        };
+    const moveToTargetAnimation = {
+        isMoveToTargetLat: false,
+        isMoveToTargetLng: false,
+        animationSpeed: 100,
+        angleLatSpeed: null, //per sec
+        angleLngSpeed: null, //per sec
+        timeAnimation: null,
+        timeAnimationClock: null,
+        targetLat: null,
+        targetLng: null,
+        tagetHeight: null,
+        move: function() {
+            controls.enableRotate = false;
+            let delta = moveToTargetAnimation.timeAnimationClock.getDelta()
+            let timeFraction = moveToTargetAnimation.timeAnimationClock.elapsedTime / moveToTargetAnimation.timeAnimation;
+            if (timeFraction > 1) timeFraction = 1;
+            let fun = Math.sin(Math.acos(timeFraction / 1.15));
+            // let fun = 1;
+            let currentData = {
+                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+            };
 
-        let deltaLatSpeed = ( globals.angleLatSpeed * delta * fun);
-        let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
+            let deltaLatSpeed = ( moveToTargetAnimation.angleLatSpeed * delta * fun);
+            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
 
-        let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-        let deltaLngSpeed = ( globals.angleLngSpeed * delta * fun);
-        let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
+            let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
+            let deltaLngSpeed = ( moveToTargetAnimation.angleLngSpeed * delta * fun);
+            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
 
-        if( globals.angleLatSpeed > 0 && currentData.lat >= globals.targetLat ) globals.isMoveToTargetLat = false;
-        else if( globals.angleLatSpeed < 0 && currentData.lat <= globals.targetLat ) globals.isMoveToTargetLat = false;
-        else {
-            nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
-            distanceXZ = currentData.radius * Math.cos(nextAngleLat);
+            if( moveToTargetAnimation.angleLatSpeed > 0 && currentData.lat >= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
+            else if( moveToTargetAnimation.angleLatSpeed < 0 && currentData.lat <= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
+            else {
+                nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
+                distanceXZ = currentData.radius * Math.cos(nextAngleLat);
 
-            camera.position.y = currentData.radius * Math.sin(nextAngleLat);
-            camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-        }
+                camera.position.y = currentData.radius * Math.sin(nextAngleLat);
+                camera.position.x = distanceXZ * Math.cos(nextAngleLng);
+                camera.position.z = distanceXZ * Math.sin(nextAngleLng);
+            }
 
-        if( globals.angleLngSpeed > 0 && currentData.lng >= globals.targetLng ) globals.isMoveToTargetLng = false;
-        else if( globals.angleLngSpeed < 0 && currentData.lng <= globals.targetLng ) globals.isMoveToTargetLng = false;
-        else {
-            nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
+            if( moveToTargetAnimation.angleLngSpeed > 0 && currentData.lng >= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
+            else if( moveToTargetAnimation.angleLngSpeed < 0 && currentData.lng <= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
+            else {
+                nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
-            camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
-        }
-        requestRenderIfNotRequested();
+                camera.position.x = distanceXZ * Math.cos(nextAngleLng);
+                camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
+            }
+            requestRenderIfNotRequested();
+        },
     }
-
-    let renderRequested = false;
 
     setInterval(function() {
         globals.updateTimer -= globals.clock.getDelta();
         
         //if camera is going to target don't update position of 'million' satelite
-        if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget() 
-        else {if ( globals.updateTimer <= 0 ) moveSat();}
-
+        if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTargetAnimation.move();
+        else {
+            if ( globals.updateTimer <= 0 ) moveSat();
+            controls.enableRotate = true;
+        }
+        controls.update();
     }, 1000/60);
 
     function render() {
@@ -257,7 +228,7 @@ import { Satellite } from './satellite.js';
             camera.updateProjectionMatrix();
         }
 
-        controls.update();
+        
         renderer.render( scene, camera );
     }
     render();
@@ -268,7 +239,6 @@ import { Satellite } from './satellite.js';
             requestAnimationFrame( render );
         }
     }
-
 
     controls.addEventListener('change', requestRenderIfNotRequested);
     window.addEventListener('resize', requestRenderIfNotRequested)

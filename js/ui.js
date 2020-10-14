@@ -11,14 +11,14 @@ function addNewSatellite(satelliteObj) {
     const objSat = oneSatelliteHTML.cloneNode(true);;
     objSat.innerHTML = satelliteObj.name;
     objSat.addEventListener('click', function() {
-      satelliteObj.changeColor('#ff0000');
+      satelliteObj.setMeshColor('#ff0000');
       satelliteObj.moveToSatellite();
-
+      satelliteObj.createSateliteOrbits();
 
       satelliteInfoUpHTML.addEventListener('click', function() {
         satelliteInfoHTML.style.height = '0';
         satelliteInfoHTML.style.opacity = '0';
-        satelliteObj.changeColor('#00ff00');
+        satelliteObj.setMeshColor('#00ff00');
         
         // satelliteInfoUpHTML.removeEventListener('click', this);
       })
