@@ -7,33 +7,36 @@ class Satellite {
             this.name = window.TLE.getSatelliteName(this.tle);
             this.info = window.TLE.getSatelliteInfo(this.tle);
             this.isValid = true;
+            this.createSatelliteMesh();
             
         } catch(e) {
             this.isValid = false;
             console.log("Error: " + this.name);
         }
-
-        this.createSatMesh();
     }
 
-    createSatMesh() {
-        if(this.isValid) {
-            console.log("tworzdde");
+    createSatelliteMesh() {
             const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
             this.mesh = new THREE.Sprite( spriteMaterial );
             this.mesh.scale.set(0.005, 0.005, 0.005);
-        }
     }
 
     updateLatLng() {
-        try {
+        if(this.isValid) {
             const data = window.TLE.getLatLngObj(this.tle);
             this.info.lat = data.lat;
             this.info.lng = data.lng;
-        } catch(e) {
-            this.isValid = false;
-            console.log("Error: Can't get coordinate of " + this.name);
-        }
+
+            let angleLat = THREE.MathUtils.degToRad(this.info.lat);
+            let height = 1 + (this.info.height / 6371);
+
+            this.mesh.position.y = height * Math.sin(angleLat);
+            let radius = height * Math.cos(angleLat);
+
+            let angleLng = THREE.MathUtils.degToRad(this.info.lng);
+            this.mesh.position.x = radius * Math.cos(angleLng);
+            this.mesh.position.z = radius * Math.sin(angleLng);
+        } 
     }
 
     setMeshColor() {

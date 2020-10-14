@@ -1,6 +1,5 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
-import {SVGLoader} from '../node_modules/three/examples/jsm/loaders/SVGLoader.js';
 import * as UI from './ui.js';
 import { Satellite } from './satellite.js';
 
@@ -41,27 +40,18 @@ import { Satellite } from './satellite.js';
 
     function createSatellitesObj(data) {
         data.forEach((tle) => {
-            const sat = {}
-            try {
-                sat.name = window.TLE.getSatelliteName(tle);
-                sat.info = window.TLE.getSatelliteInfo(tle);
-                sat.tle = tle;
-                sat.status = "ok";
-            } catch(e) {
-                sat.status = "error";
-                console.log("Error: Can't get info from this TLE data, sory :(");
-            }
-            UI.addNewSatellite(sat);
-            satellites.push(sat)
+            let sat = new Satellite(tle);
+            if(sat.isValid) scene.add( sat.mesh );
+            // UI.addNewSatellite(sat);
+            satellites.push(sat);
         })
-
-    }
+        requestRenderIfNotRequested();
+    }   
     
     loadFile('../static/starlink.txt')
         .then(parseData)
         .then(createSatellitesObj)
-        .then(updataSat)
-        
+    
 ////////////////////////////////////////////////////////////////////////////////////////
 //  Main properties of scene, render, resize etc.
     const renderer = new THREE.WebGLRenderer();
@@ -77,10 +67,9 @@ import { Satellite } from './satellite.js';
 
     const scene = new THREE.Scene();
     
-
-    // x,y,z lines
-    const axesHelper = new THREE.AxesHelper( 2 );
-    scene.add( axesHelper )
+    // // x,y,z lines
+    // const axesHelper = new THREE.AxesHelper( 2 );
+    // scene.add( axesHelper )
 
     //main light
     const color = 0xFFFFFF;
@@ -113,7 +102,6 @@ import { Satellite } from './satellite.js';
     controls.update();
     
 //  Create globe, texture etc.
-
 
     {  
         const loader = new THREE.TextureLoader;
@@ -164,103 +152,48 @@ import { Satellite } from './satellite.js';
 
     function updataSat(){
         
-        for(let i = 0; i < satellites.length; i++) {
-            if(satellites[i].status === "ok"){
-                const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
-                satellites[i].cube = new THREE.Sprite( spriteMaterial );
-                satellites[i].cube.scale.set(0.005, 0.005, 0.005)
+        // const satOrbit = window.TLE.getGroundTracks({
+        //     tle: satellites[5].tle,
+        //     isLngLatFormat: true,
+        //     startTimeMS: 1502342329860,
 
-                satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
-                satellites[i].moveToSatellite = function()  {
-                    const data = window.TLE.getLatLngObj(satellites[i].tle);
-                    let currentData = {
-                        lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-                        lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-                        radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-                    };
-                    globals.targetLat= data.lat,
-                    globals.targetLng= data.lng,
-                    globals.tagetHeight= 1 + (satellites[i].info.height / 6371);
+        // }).then( function(satOrbit) {
+        //     let material = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+        //     let points = [];
 
-                    if( Math.abs(globals.targetLat - currentData.lat) > Math.abs(globals.targetLng - currentData.lng) ) {
-                        const angle1 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = globals.animationSpeed;
-                        globals.timeAnimation = angle1 / globals.animationSpeed;
-                        const angle2 = Math.abs(globals.targetLng - currentData.lng);
-                        globals.angleLngSpeed = angle2 / globals.timeAnimation;
-                    }else {
-                        const angle1 = Math.abs(globals.targetLng - currentData.lng); 
-                        globals.angleLngSpeed = globals.animationSpeed;
-                        globals.timeAnimation = angle1 / globals.animationSpeed;
-                        const angle2 = Math.abs(globals.targetLat - currentData.lat)
-                        globals.angleLatSpeed = angle2 / globals.timeAnimation;
-                    }
-
-                    if(globals.targetLat < currentData.lat) globals.angleLatSpeed *= -1;
-                    if(globals.targetLng < currentData.lng) globals.angleLngSpeed *= -1;
-
-                    globals.isMoveToTargetLat = true;
-                    globals.isMoveToTargetLng = true;
-                    globals.timeAnimationClock = new THREE.Clock();
-                }
-                scene.add( satellites[i].cube );
-            }
-        }
-
-        const satOrbit = window.TLE.getGroundTracks({
-            tle: satellites[5].tle,
-            isLngLatFormat: true,
-            startTimeMS: 1502342329860,
-
-        }).then( function(satOrbit) {
-            let material = new THREE.LineBasicMaterial( {color: 0x0000ff} );
-            let points = [];
-
-            for(let n=0; n<3; n++) {
-                for(let i = 0; i < satOrbit[n].length; i++) {
-                    let orbitPointData = {
-                        lat: THREE.MathUtils.degToRad(satOrbit[n][i][1]),
-                        lng: THREE.MathUtils.degToRad(satOrbit[n][i][0]),
-                        height: 1 + (satellites[0].info.height / 6371),
-                    };
+        //     for(let n=0; n<3; n++) {
+        //         for(let i = 0; i < satOrbit[n].length; i++) {
+        //             let orbitPointData = {
+        //                 lat: THREE.MathUtils.degToRad(satOrbit[n][i][1]),
+        //                 lng: THREE.MathUtils.degToRad(satOrbit[n][i][0]),
+        //                 height: 1 + (satellites[0].info.height / 6371),
+        //             };
                     
-                    let y = orbitPointData.height * Math.sin(orbitPointData.lat);
-                    let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
-                    let x = radius * Math.cos(orbitPointData.lng);
-                    let z = radius * Math.sin(orbitPointData.lng);
+        //             let y = orbitPointData.height * Math.sin(orbitPointData.lat);
+        //             let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
+        //             let x = radius * Math.cos(orbitPointData.lng);
+        //             let z = radius * Math.sin(orbitPointData.lng);
     
-                    points.push( new THREE.Vector3( x, y, z) );
-                }
-            }
+        //             points.push( new THREE.Vector3( x, y, z) );
+        //         }
+        //     }
             
 
         
-            let geometry = new THREE.BufferGeometry().setFromPoints( points);
-            let line = new THREE.Line( geometry, material);
-            scene.add(line);
+        //     let geometry = new THREE.BufferGeometry().setFromPoints( points);
+        //     let line = new THREE.Line( geometry, material);
+        //     scene.add(line);
             
-        })
-
-
+        // })
+        
     }
 
     function moveSat() {
-        for(let i = 0; i < satellites.length; i++) {
-            if(satellites[i].status === "ok"){
-                let data = window.TLE.getLatLngObj(satellites[i].tle)
-                let angleLat = THREE.MathUtils.degToRad(data.lat);
-                let height = 1 + (satellites[i].info.height / 6371);
-
-                satellites[i].cube.position.y = height * Math.sin(angleLat);
-                let radius = height * Math.cos(angleLat);
-
-                let angleLng = THREE.MathUtils.degToRad(data.lng);
-                satellites[i].cube.position.x = radius * Math.cos(angleLng);
-                satellites[i].cube.position.z = radius * Math.sin(angleLng);
-            }
-        }
-        globals.updateTimer = globals.setUpdateTime;
+        satellites.forEach((sat) => {
+            sat.updateLatLng();
+        });
         requestRenderIfNotRequested();
+        globals.updateTimer = globals.setUpdateTime;
     }
 
     function moveToTarget() {
@@ -313,7 +246,7 @@ import { Satellite } from './satellite.js';
         if( globals.isMoveToTargetLat || globals.isMoveToTargetLng ) moveToTarget() 
         else {if ( globals.updateTimer <= 0 ) moveSat();}
 
-    }, 1000/120);
+    }, 1000/60);
 
     function render() {
         renderRequested = false;
@@ -335,6 +268,7 @@ import { Satellite } from './satellite.js';
             requestAnimationFrame( render );
         }
     }
+
 
     controls.addEventListener('change', requestRenderIfNotRequested);
     window.addEventListener('resize', requestRenderIfNotRequested)
