@@ -1,39 +1,18 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
-import {SVGLoader} from '../node_modules/three/examples/jsm/loaders/SVGLoader.js';
 import * as UI from './ui.js';
+import { Satellite } from './satellite.js';
 
 (function(){
     const satellites = [];
+
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
         setUpdateTime: 1,
-
-        isMoveToTargetLat: false,
-        isMoveToTargetLng: false,
-        animationSpeed: 100,
-        angleLatSpeed: null, //per sec
-        angleLngSpeed: null, //per sec
-        timeAnimation: null,
-        timeAnimationClock: null,
-        targetLat: null,
-        targetLng: null,
-        tagetHeight: null,
     }
 
-    const moveToTargetAnimation = {
-        isMoveToTargetLat: false,
-        isMoveToTargetLng: false,
-        animationSpeed: 100,
-        angleLatSpeed: null, //per sec
-        angleLngSpeed: null, //per sec
-        timeAnimation: null,
-        timeAnimationClock: null,
-        targetLat: null,
-        targetLng: null,
-        tagetHeight: null,
-    }
+    
 
     async function loadFile(url) {
         const req = await fetch(url)
@@ -52,52 +31,49 @@ import * as UI from './ui.js';
 
     function createSatellitesObj(data) {
         data.forEach((tle) => {
-            const sat = {}
-            try {
-                sat.name = window.TLE.getSatelliteName(tle);
-                sat.info = window.TLE.getSatelliteInfo(tle);
-                sat.tle = tle;
-                sat.status = "ok";
-            } catch(e) {
-                sat.status = "error";
-                console.log("Error: Can't get info from this TLE data, sory :(");
-            }
+            let sat = new Satellite(tle);
+            if(sat.isValid) {
+                sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
+                scene.add( sat.mesh );
+            } 
             UI.addNewSatellite(sat);
-            satellites.push(sat)
+            satellites.push(sat);
         })
-    }
+        requestRenderIfNotRequested();
+    }   
     
     loadFile('../static/starlink.txt')
         .then(parseData)
         .then(createSatellitesObj)
-        .then(updataSat)
-        
+    
 ////////////////////////////////////////////////////////////////////////////////////////
 //  Main properties of scene, render, resize etc.
     const renderer = new THREE.WebGLRenderer();
+    let renderRequested = false;
     document.body.appendChild( renderer.domElement );
 
     const fov = 45;
     const aspect = 2;
-    const near = 0.01;
-    const far = 50;
+    const near = 0.1;
+    const far = 500;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
 
+   
+
     const scene = new THREE.Scene();
     
-    //x,y,z lines
+    // x,y,z lines
     // const axesHelper = new THREE.AxesHelper( 2 );
     // scene.add( axesHelper )
 
     //main light
     const color = 0xFFFFFF;
     const intensity = 2;
-    const light = new THREE.AmbientLight(color, intensity);
+    let light = new THREE.AmbientLight(color, intensity);
     scene.add(light);
-    
-    
+
     //responsive
     function resizeRendererToDisplaySize( renderer ) {
         const canvas = renderer.domElement;
@@ -119,7 +95,7 @@ import * as UI from './ui.js';
     controls.enableDamping = true;
     controls.enablePan = false;
     controls.minDistance = 1.3;
-    controls.maxDistance = 5;
+    controls.maxDistance = 10;
     controls.update();
     
 //  Create globe, texture etc.
@@ -151,9 +127,32 @@ import * as UI from './ui.js';
         
         const mesh = new THREE.Mesh(geometry, material1);
         mesh.renderOrder = 2;
+        // mesh.rotateY(Math.PI/2);
         scene.add(mesh);
         const mesh2 = new THREE.Mesh(geometry, material2);
+        // mesh2.rotateY(Math.PI/2);
         scene.add(mesh2);
+        
+        var customMaterial = new THREE.ShaderMaterial( 
+            {
+                uniforms:       
+                { 
+                },
+                vertexShader: "varying vec3 vNormal; void main() {vNormal = normalize( normalMatrix * normal );gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}",
+                fragmentShader: "varying vec3 vNormal;void main() {float intensity = pow( 0.22 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 2.5 ); gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;}",
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                // opacity: 0.5,
+            }   );
+                
+        var atmosphereGeo = new THREE.SphereGeometry( 1.4, 64, 32 );
+        var atmosphere = new THREE.Mesh( atmosphereGeo, customMaterial );
+        scene.add( atmosphere );
+
+        
+        
+        
         
     }
 
@@ -171,122 +170,79 @@ import * as UI from './ui.js';
         scene.background = texture;
     }
 
-    function updataSat(){
-        
-        for(let i = 0; i < satellites.length; i++) {
-            if(satellites[i].status === "ok"){
-                const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
-                satellites[i].cube = new THREE.Sprite( spriteMaterial );
-                satellites[i].cube.scale.set(0.005, 0.005, 0.005)
-
-                satellites[i].changeColor = function(color) { satellites[i].cube.material.color = new THREE.Color( color ) }
-                satellites[i].moveToSatellite = function()  {
-                    const data = window.TLE.getLatLngObj(satellites[i].tle);
-                    let currentData = {
-                        lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-                        lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-                        radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-                    };
-                    moveToTargetAnimation.targetLat= data.lat,
-                    moveToTargetAnimation.targetLng= data.lng,
-                    moveToTargetAnimation.tagetHeight= 1 + (satellites[i].info.height / 6371);
-
-                    if( Math.abs(moveToTargetAnimation.targetLat - currentData.lat) > Math.abs(moveToTargetAnimation.targetLng - currentData.lng) ) {
-                        const angle1 = Math.abs(moveToTargetAnimation.targetLat - currentData.lat)
-                        moveToTargetAnimation.angleLatSpeed = moveToTargetAnimation.animationSpeed;
-                        moveToTargetAnimation.timeAnimation = angle1 / moveToTargetAnimation.animationSpeed;
-                        const angle2 = Math.abs(moveToTargetAnimation.targetLng - currentData.lng);
-                        moveToTargetAnimation.angleLngSpeed = angle2 / moveToTargetAnimation.timeAnimation;
-                    }else {
-                        const angle1 = Math.abs(moveToTargetAnimation.targetLng - currentData.lng); 
-                        moveToTargetAnimation.angleLngSpeed = moveToTargetAnimation.animationSpeed;
-                        moveToTargetAnimation.timeAnimation = angle1 / moveToTargetAnimation.animationSpeed;
-                        const angle2 = Math.abs(moveToTargetAnimation.targetLat - currentData.lat)
-                        moveToTargetAnimation.angleLatSpeed = angle2 / moveToTargetAnimation.timeAnimation;
-                    }
-
-                    if(moveToTargetAnimation.targetLat < currentData.lat) moveToTargetAnimation.angleLatSpeed *= -1;
-                    if(moveToTargetAnimation.targetLng < currentData.lng) moveToTargetAnimation.angleLngSpeed *= -1;
-
-                    moveToTargetAnimation.isMoveToTargetLat = true;
-                    moveToTargetAnimation.isMoveToTargetLng = true;
-                    moveToTargetAnimation.timeAnimationClock = new THREE.Clock();
-                }
-                scene.add( satellites[i].cube );
-            }
-        }
-    }
-
     function moveSat() {
-        for(let i = 0; i < satellites.length; i++) {
-            if(satellites[i].status === "ok"){
-                let data = window.TLE.getLatLngObj(satellites[i].tle)
-                let angleLat = THREE.MathUtils.degToRad(data.lat);
-                let height = 1 + (satellites[i].info.height / 6371);
-
-                satellites[i].cube.position.y = height * Math.sin(angleLat);
-                let radius = height * Math.cos(angleLat);
-
-                let angleLng = THREE.MathUtils.degToRad(data.lng);
-                satellites[i].cube.position.x = radius * Math.cos(angleLng);
-                satellites[i].cube.position.z = radius * Math.sin(angleLng);
-            }
-        }
+        satellites.forEach((sat) => {
+            sat.updateLatLng();
+        });
+        requestRenderIfNotRequested();
         globals.updateTimer = globals.setUpdateTime;
-        requestRenderIfNotRequested();
     }
 
-    function moveToTarget() {
-        let delta = moveToTargetAnimation.timeAnimationClock.getDelta()
-        let timeFraction = moveToTargetAnimation.timeAnimationClock.elapsedTime / moveToTargetAnimation.timeAnimation;
-        if (timeFraction > 1) timeFraction = 1;
-        let fun = Math.sin(Math.acos(timeFraction / 1.15));
-        // let fun = 1;
-        let currentData = {
-            lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
-            lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
-            radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
-        };
+    const moveToTargetAnimation = {
+        isMoveToTargetLat: false,
+        isMoveToTargetLng: false,
+        animationSpeed: 100,
+        angleLatSpeed: null, //per sec
+        angleLngSpeed: null, //per sec
+        timeAnimation: null,
+        timeAnimationClock: null,
+        targetLat: null,
+        targetLng: null,
+        tagetHeight: null,
+        move: function() {
+            controls.enableRotate = false;
+            let delta = moveToTargetAnimation.timeAnimationClock.getDelta()
+            let timeFraction = moveToTargetAnimation.timeAnimationClock.elapsedTime / moveToTargetAnimation.timeAnimation;
+            if (timeFraction > 1) timeFraction = 1;
+            let fun = Math.sin(Math.acos(timeFraction / 1.15));
+            // let fun = 1;
+            let currentData = {
+                lat: THREE.MathUtils.radToDeg( Math.atan(camera.position.y / Math.hypot(camera.position.x, camera.position.z) )),
+                lng: THREE.MathUtils.radToDeg( Math.atan2(camera.position.z, camera.position.x) ),
+                radius: Math.hypot(camera.position.y, Math.hypot(camera.position.x, camera.position.z))
+            };
 
-        let deltaLatSpeed = ( moveToTargetAnimation.angleLatSpeed * delta * fun);
-        let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
+            let deltaLatSpeed = ( moveToTargetAnimation.angleLatSpeed * delta * fun);
+            let nextAngleLat = THREE.MathUtils.degToRad(currentData.lat);
 
-        let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
-        let deltaLngSpeed = ( moveToTargetAnimation.angleLngSpeed * delta * fun);
-        let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
+            let distanceXZ = currentData.radius * Math.cos(nextAngleLat);
+            let deltaLngSpeed = ( moveToTargetAnimation.angleLngSpeed * delta * fun);
+            let nextAngleLng = THREE.MathUtils.degToRad(currentData.lng);
 
-        if( moveToTargetAnimation.angleLatSpeed > 0 && currentData.lat >= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
-        else if( moveToTargetAnimation.angleLatSpeed < 0 && currentData.lat <= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
-        else {
-            nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
-            distanceXZ = currentData.radius * Math.cos(nextAngleLat);
+            if( moveToTargetAnimation.angleLatSpeed > 0 && currentData.lat >= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
+            else if( moveToTargetAnimation.angleLatSpeed < 0 && currentData.lat <= moveToTargetAnimation.targetLat ) moveToTargetAnimation.isMoveToTargetLat = false;
+            else {
+                nextAngleLat = THREE.MathUtils.degToRad(currentData.lat + deltaLatSpeed);
+                distanceXZ = currentData.radius * Math.cos(nextAngleLat);
 
-            camera.position.y = currentData.radius * Math.sin(nextAngleLat);
-            camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);
-        }
+                camera.position.y = currentData.radius * Math.sin(nextAngleLat);
+                camera.position.x = distanceXZ * Math.cos(nextAngleLng);
+                camera.position.z = distanceXZ * Math.sin(nextAngleLng);
+            }
 
-        if( moveToTargetAnimation.angleLngSpeed > 0 && currentData.lng >= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
-        else if( moveToTargetAnimation.angleLngSpeed < 0 && currentData.lng <= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
-        else {
-            nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
+            if( moveToTargetAnimation.angleLngSpeed > 0 && currentData.lng >= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
+            else if( moveToTargetAnimation.angleLngSpeed < 0 && currentData.lng <= moveToTargetAnimation.targetLng ) moveToTargetAnimation.isMoveToTargetLng = false;
+            else {
+                nextAngleLng = THREE.MathUtils.degToRad(currentData.lng + deltaLngSpeed);
 
-            camera.position.x = distanceXZ * Math.cos(nextAngleLng);
-            camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
-        }
-        requestRenderIfNotRequested();
+                camera.position.x = distanceXZ * Math.cos(nextAngleLng);
+                camera.position.z = distanceXZ * Math.sin(nextAngleLng);     
+            }
+            requestRenderIfNotRequested();
+        },
     }
-
-    let renderRequested = false;
 
     setInterval(function() {
         globals.updateTimer -= globals.clock.getDelta();
         
         //if camera is going to target don't update position of 'million' satelite
-        if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTarget() 
-        else {if ( globals.updateTimer <= 0 ) moveSat();}
-
-    }, 1000/120);
+        if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTargetAnimation.move();
+        else {
+            if ( globals.updateTimer <= 0 ) moveSat();
+            controls.enableRotate = true;
+        }
+        controls.update();
+    }, 1000/60);
 
     function render() {
         renderRequested = false;
@@ -297,7 +253,7 @@ import * as UI from './ui.js';
             camera.updateProjectionMatrix();
         }
 
-        controls.update();
+        
         renderer.render( scene, camera );
     }
     render();
