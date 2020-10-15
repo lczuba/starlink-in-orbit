@@ -23,9 +23,10 @@ class Satellite {
 
     updateLatLng() {
         if(this.isValid) {
-            const data = window.TLE.getLatLngObj(this.tle);
-            this.info.lat = data.lat;
-            this.info.lng = data.lng;
+            // const data = window.TLE.getLatLngObj(this.tle);
+            this.info = window.TLE.getSatelliteInfo(this.tle);
+            // this.info.lat = data.lat;
+            // this.info.lng = data.lng;
 
             let angleLat = THREE.MathUtils.degToRad(this.info.lat);
             let height = 1 + (this.info.height / 6371);
@@ -33,7 +34,7 @@ class Satellite {
             this.mesh.position.y = height * Math.sin(angleLat);
             let radius = height * Math.cos(angleLat);
 
-            let angleLng = THREE.MathUtils.degToRad(this.info.lng);
+            let angleLng = THREE.MathUtils.degToRad(this.info.lng * -1);
             this.mesh.position.x = radius * Math.cos(angleLng);
             this.mesh.position.z = radius * Math.sin(angleLng);
         } 
@@ -58,7 +59,7 @@ class Satellite {
         };
 
         this.moveToTargetAnimation.targetLat= this.info.lat,
-        this.moveToTargetAnimation.targetLng= this.info.lng,
+        this.moveToTargetAnimation.targetLng= this.info.lng *-1,
         this.moveToTargetAnimation.tagetHeight= 1 + (this.info.height / 6371);
 
         if( Math.abs(this.moveToTargetAnimation.targetLat - currentData.lat) > Math.abs(this.moveToTargetAnimation.targetLng - currentData.lng) ) {
@@ -84,43 +85,48 @@ class Satellite {
     }
 
     async createSateliteOrbits() {
-        console.log("start orbit");
-            await window.TLE.getGroundTracks({
-                tle: this.tle,
-                isLngLatFormat: true,
-                stepMS: 10000,
-            }).then((data) => this.createSateliteOrbits2(data))
-            
-           
+        let date = new Date().getTime()
+        let fromDate = date - 1000 * 60 * 60 * 100;
+        let toDate = date + 1000 * 60 * 60 * 100 ;
+        console.log(fromDate, date, toDate);
+        let pointsDeg = [];
+
+        for(let t = fromDate; t <= toDate; t+=50000) {
+            pointsDeg.push(window.TLE.getSatelliteInfo(
+                this.tle,
+                t
+            ))
+        }
+        // console.log( pointsDeg );
+
+        let pointsXYZ = [];
+        for(let i = 0; i < pointsDeg.length; i++) {
+            let orbitPointData = {
+                lat: THREE.MathUtils.degToRad(pointsDeg[i].lat),
+                lng: THREE.MathUtils.degToRad(pointsDeg[i].lng) * -1,
+                height: 1 + (pointsDeg[i].height / 6371),
+            };
+            // console.log(orbitPointData);
+
+            let y = orbitPointData.height * Math.sin(orbitPointData.lat);
+            let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
+            let x = radius * Math.cos(orbitPointData.lng);
+            let z = radius * Math.sin(orbitPointData.lng);
+
+            pointsXYZ.push( new THREE.Vector3( x, y, z) );
+        }
+        let geometry = new THREE.BufferGeometry().setFromPoints( pointsXYZ );
+        let material = new THREE.LineBasicMaterial( {color: 0x004d66} );
+        this.line = new THREE.Line( geometry, material);
+        this.scene.add(this.line);
+        
     }
 
-    createSateliteOrbits2(satOrbit) {
-         let material = new THREE.LineBasicMaterial( {color: 0x0000ff} );
-            
-            for(let n=0; n<3; n++) {
-                let points = [];
-                for(let i = 0; i < satOrbit[n].length; i++) {
-                    let orbitPointData = {
-                        lat: THREE.MathUtils.degToRad(satOrbit[n][i][1]),
-                        lng: THREE.MathUtils.degToRad(satOrbit[n][i][0]),
-                        height: 1 + (this.info.height / 6371),
-                    };
-                    
-                    let y = orbitPointData.height * Math.sin(orbitPointData.lat);
-                    let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
-                    let x = radius * Math.cos(orbitPointData.lng);
-                    let z = radius * Math.sin(orbitPointData.lng);
-    
-                    points.push( new THREE.Vector3( x, y, z) );
-                }
-                let geometry = new THREE.BufferGeometry().setFromPoints( points);
-                let line = new THREE.Line( geometry, material);
-                this.scene.add(line);
-            }
-            
-           
-            console.log("end orbit");
-    };
+    removeSatelliteOrbit() {
+        // this.scene.remove(this.line[1]);
+        this.scene.remove(this.line);
+        // this.scene.remove(this.line[2]);
+    }
 }
 
 export { Satellite }

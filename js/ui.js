@@ -19,6 +19,7 @@ function addNewSatellite(satelliteObj) {
         satelliteInfoHTML.style.height = '0';
         satelliteInfoHTML.style.opacity = '0';
         satelliteObj.setMeshColor('#00ff00');
+        satelliteObj.removeSatelliteOrbit();
         
         // satelliteInfoUpHTML.removeEventListener('click', this);
       })

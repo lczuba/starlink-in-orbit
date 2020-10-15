@@ -60,6 +60,8 @@ import { Satellite } from './satellite.js';
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
 
+   
+
     const scene = new THREE.Scene();
     
     // x,y,z lines
@@ -93,7 +95,7 @@ import { Satellite } from './satellite.js';
     controls.enableDamping = true;
     controls.enablePan = false;
     controls.minDistance = 1.3;
-    controls.maxDistance = 500;
+    controls.maxDistance = 10;
     controls.update();
     
 //  Create globe, texture etc.
@@ -125,9 +127,32 @@ import { Satellite } from './satellite.js';
         
         const mesh = new THREE.Mesh(geometry, material1);
         mesh.renderOrder = 2;
+        // mesh.rotateY(Math.PI/2);
         scene.add(mesh);
         const mesh2 = new THREE.Mesh(geometry, material2);
+        // mesh2.rotateY(Math.PI/2);
         scene.add(mesh2);
+        
+        var customMaterial = new THREE.ShaderMaterial( 
+            {
+                uniforms:       
+                { 
+                },
+                vertexShader: "varying vec3 vNormal; void main() {vNormal = normalize( normalMatrix * normal );gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}",
+                fragmentShader: "varying vec3 vNormal;void main() {float intensity = pow( 0.22 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 2.5 ); gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;}",
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                // opacity: 0.5,
+            }   );
+                
+        var atmosphereGeo = new THREE.SphereGeometry( 1.4, 64, 32 );
+        var atmosphere = new THREE.Mesh( atmosphereGeo, customMaterial );
+        scene.add( atmosphere );
+
+        
+        
+        
         
     }
 
