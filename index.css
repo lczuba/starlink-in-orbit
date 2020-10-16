@@ -1,16 +1,63 @@
+:root {
+    font-size: 16px;
+    font-family: 'Roboto';
+    --text-primary: blanchedalmond;
+    --text-secondary: blanchedalmond;
+}
 html, body {
     margin: 0;
-    height: 100%;
+    padding: 0;
+    height: 100vh;
     color: blanchedalmond;
 }
 
 canvas {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     display: block;    
 }
 
 /* ///////////////////////////////////////////////// */
+.navbar {
+    position: fixed;
+    width: 100vw;
+    height: 3rem;
+    color: var(--text-primary);
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+
+}
+
+.navbar-nav {
+    list-style: none;
+    background-color: grey;
+
+    padding: 0;
+    margin: 0;
+    display: flex;
+    /* align-items: center;
+    justify-content: center;  */
+}
+
+.nav-item {
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* justify-content: center;  */
+}
+
+.nav-item:hover {
+    opacity: 0.6;
+}
+
+svg {
+    min-width: 2rem;
+}
+
+
+
 #ui-box {
     left: 0;
     top: 0;
@@ -18,7 +65,7 @@ canvas {
 
     width: 20rem;
     
-    color: blanchedalmond;
+    color: var(--text-secondary);
 }
 
 .line-box {

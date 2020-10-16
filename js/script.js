@@ -1,51 +1,51 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import * as UI from './ui.js';
+import * as DATA from './data.js';
 import { Satellite } from './satellite.js';
 
 (function(){
+    const group = [];
     const satellites = [];
-
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
         setUpdateTime: 1,
     }
 
-    
-
-    async function loadFile(url) {
-        const req = await fetch(url)
-        return req.text();
-    }
-    
-    function parseData(text) {
-        const data = [];
-        text = text.split('\n');
-        for(let i = 0; i < text.length;) {
-            data.push([text[i], text[i+1], text[i+2]]);
-            i = i+3;
-        }
-        return data;
-    }
-
     function createSatellitesObj(data) {
-        data.forEach((tle) => {
-            let sat = new Satellite(tle);
-            if(sat.isValid) {
-                sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
-                scene.add( sat.mesh );
-            } 
-            UI.addNewSatellite(sat);
-            satellites.push(sat);
-        })
-        requestRenderIfNotRequested();
-    }   
-    
-    loadFile('../static/starlink.txt')
-        .then(parseData)
-        .then(createSatellitesObj)
-    
+        if(data.display) {
+            data.tle.forEach((tle) => {
+                let sat = new Satellite(tle);
+                if(sat.isValid) {
+                    sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
+                    scene.add( sat.mesh );
+                    satellites.push(sat);
+                } 
+            })
+            console.log(globals.clock.getElapsedTime());
+            requestRenderIfNotRequested();
+        }  
+    } 
+
+    function createGroupOfSatellites() {
+        const numberOfGroup = DATA.getNumberOfGroupsSatellites();
+        for(let i=0; i<numberOfGroup; i++) {
+            DATA.getGroupSatelite(i).then(
+                dataObj => {
+                    group.push(dataObj);
+                    console.log(dataObj);
+                    createSatellitesObj(dataObj);
+                },
+                error => {
+                    console.log(error);
+                }
+            )
+        }
+    }
+
+    createGroupOfSatellites();
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //  Main properties of scene, render, resize etc.
     const renderer = new THREE.WebGLRenderer();

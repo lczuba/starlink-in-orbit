@@ -1,42 +1,51 @@
-const satellitesHTML = document.getElementById('satellites');
-const satelliteInfoHTML = document.getElementById('satellite-info');
-const satelliteInfoBoxHTML = document.getElementById('satellite-info-box');
-const satelliteInfoUpHTML = document.getElementById('satellite-info-up');
+const nav_satellites = document.getElementById("nav_satellites");
+const nav_time = document.getElementById("nav_time");
+const nav_options = document.getElementById("nav_options");
+const nav_about = document.getElementById("nav_about");
+
+nav_satellites.addEventListener('click', function(){
+
+});
 
 
-const oneSatelliteHTML = document.createElement("p");
-oneSatelliteHTML.className = "child";
+// const satellitesHTML = document.getElementById('satellites');
+// const satelliteInfoHTML = document.getElementById('satellite-info');
+// const satelliteInfoBoxHTML = document.getElementById('satellite-info-box');
+// const satelliteInfoUpHTML = document.getElementById('satellite-info-up');
 
-function addNewSatellite(satelliteObj) {
-    const objSat = oneSatelliteHTML.cloneNode(true);;
-    objSat.innerHTML = satelliteObj.name;
-    objSat.addEventListener('click', function() {
-      satelliteObj.setMeshColor('#ff0000');
-      satelliteObj.moveToSatellite();
-      satelliteObj.createSateliteOrbits();
+// const oneSatelliteHTML = document.createElement("p");
+// oneSatelliteHTML.className = "child";
 
-      satelliteInfoUpHTML.addEventListener('click', function() {
-        satelliteInfoHTML.style.height = '0';
-        satelliteInfoHTML.style.opacity = '0';
-        satelliteObj.setMeshColor('#00ff00');
-        satelliteObj.removeSatelliteOrbit();
+// function addNewSatellite(satelliteObj) {
+//     const objSat = oneSatelliteHTML.cloneNode(true);;
+//     objSat.innerHTML = satelliteObj.name;
+//     objSat.addEventListener('click', function() {
+//       satelliteObj.setMeshColor('#ff0000');
+//       satelliteObj.moveToSatellite();
+//       satelliteObj.createSateliteOrbits();
+
+//       satelliteInfoUpHTML.addEventListener('click', function() {
+//         satelliteInfoHTML.style.height = '0';
+//         satelliteInfoHTML.style.opacity = '0';
+//         satelliteObj.setMeshColor('#00ff00');
+//         satelliteObj.removeSatelliteOrbit();
         
-        // satelliteInfoUpHTML.removeEventListener('click', this);
-      })
+//         // satelliteInfoUpHTML.removeEventListener('click', this);
+//       })
 
-      satelliteInfoHTML.style.height = '15rem';
-      satelliteInfoHTML.style.opacity = '1';
-      satelliteInfoBoxHTML.innerHTML = 
-      "<p> name: " + satelliteObj.name + "</p>" +
-      "<p> lat: " + satelliteObj.info.lat + "</p>" +
-      "<p> lng: " + satelliteObj.info.lng + "</p>" +
-      "<p> height: " + satelliteObj.info.height + "</p>" +
-      "<p> velocity: " + satelliteObj.info.velocity + "</p>" +
-      "<p> range: " + satelliteObj.info.range + "</p>"
-    })
-    satellitesHTML.appendChild(objSat);
+//       satelliteInfoHTML.style.height = '15rem';
+//       satelliteInfoHTML.style.opacity = '1';
+//       satelliteInfoBoxHTML.innerHTML = 
+//       "<p> name: " + satelliteObj.name + "</p>" +
+//       "<p> lat: " + satelliteObj.info.lat + "</p>" +
+//       "<p> lng: " + satelliteObj.info.lng + "</p>" +
+//       "<p> height: " + satelliteObj.info.height + "</p>" +
+//       "<p> velocity: " + satelliteObj.info.velocity + "</p>" +
+//       "<p> range: " + satelliteObj.info.range + "</p>"
+//     })
+//     satellitesHTML.appendChild(objSat);
 
-  return {};
-}
+//   return {};
+// }
 
-export {addNewSatellite};
+export {};
