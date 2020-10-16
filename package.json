@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "three": "^0.121.0",
-    "tle.js": "^4.2.5"
+    "three": "^0.121.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "http-server": "^0.12.3"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
