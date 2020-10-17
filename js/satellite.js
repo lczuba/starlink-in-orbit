@@ -19,6 +19,7 @@ class Satellite {
             const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
             this.mesh = new THREE.Sprite( spriteMaterial );
             this.mesh.scale.set(0.005, 0.005, 0.005);
+            this.updateLatLng();
     }
 
     updateLatLng() {

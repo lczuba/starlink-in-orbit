@@ -10,13 +10,14 @@ import { Satellite } from './satellite.js';
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
-        setUpdateTime: 1,
+        setUpdateTime: 5,
     }
 
     function createSatellitesObj(data) {
         if(data.display) {
             data.tle.forEach((tle) => {
                 let sat = new Satellite(tle);
+                data.satellites.push(sat);
                 if(sat.isValid) {
                     sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
                     scene.add( sat.mesh );
@@ -88,8 +89,61 @@ import { Satellite } from './satellite.js';
     }
 
 ///////////////////////////
+//  Create globe, texture etc.
+    {  
+        const loader = new THREE.TextureLoader;
+        const texture = loader.load('../static/hologram-map.svg', function ( data ) {
+            data.image.width *= 8;
+            data.image.height *= 8;
 
-//  Orbit Controls 
+            const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
+        
+            const material1 = new THREE.MeshPhongMaterial({
+                map: texture,
+                side: THREE.FrontSide,
+                flatShading: true,
+                transparent: true,
+                opacity: 1
+              });
+    
+            const material2 = new THREE.MeshPhongMaterial({
+                map: texture,
+                side: THREE.BackSide,
+                flatShading: true,
+                transparent: true,
+                opacity: 0.8
+              });
+            
+            const mesh = new THREE.Mesh(geometry, material1);
+            mesh.renderOrder = 2;
+            // mesh.rotateY(Math.PI/2);
+            scene.add(mesh);
+            const mesh2 = new THREE.Mesh(geometry, material2);
+            // mesh2.rotateY(Math.PI/2);
+            scene.add(mesh2);
+
+            var customMaterial = new THREE.ShaderMaterial( 
+                {
+                    uniforms:       
+                    { 
+                    },
+                    vertexShader: "varying vec3 vNormal; void main() {vNormal = normalize( normalMatrix * normal );gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}",
+                    fragmentShader: "varying vec3 vNormal;void main() {float intensity = pow( 0.22 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 2.5 ); gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;}",
+                    side: THREE.BackSide,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true,
+                    // opacity: 0.5,
+                }   );
+                    
+            var atmosphereGeo = new THREE.SphereGeometry( 1.4, 64, 32 );
+            var atmosphere = new THREE.Mesh( atmosphereGeo, customMaterial );
+            scene.add( atmosphere );
+            requestRenderIfNotRequested();
+        })
+
+    }
+
+    //  Orbit Controls 
     
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -98,64 +152,6 @@ import { Satellite } from './satellite.js';
     controls.maxDistance = 10;
     controls.update();
     
-//  Create globe, texture etc.
-
-    {  
-        const loader = new THREE.TextureLoader;
-        const texture = loader.load('../static/hologram-map.svg', function ( data ) {
-            data.image.width *= 8;
-            data.image.height *= 8;
-        });
-
-        const geometry = new THREE.SphereBufferGeometry(1, 64, 32);
-        
-        const material1 = new THREE.MeshPhongMaterial({
-            map: texture,
-            side: THREE.FrontSide,
-            flatShading: true,
-            transparent: true,
-            opacity: 1
-          });
-
-        const material2 = new THREE.MeshPhongMaterial({
-            map: texture,
-            side: THREE.BackSide,
-            flatShading: true,
-            transparent: true,
-            opacity: 0.8
-          });
-        
-        const mesh = new THREE.Mesh(geometry, material1);
-        mesh.renderOrder = 2;
-        // mesh.rotateY(Math.PI/2);
-        scene.add(mesh);
-        const mesh2 = new THREE.Mesh(geometry, material2);
-        // mesh2.rotateY(Math.PI/2);
-        scene.add(mesh2);
-        
-        var customMaterial = new THREE.ShaderMaterial( 
-            {
-                uniforms:       
-                { 
-                },
-                vertexShader: "varying vec3 vNormal; void main() {vNormal = normalize( normalMatrix * normal );gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}",
-                fragmentShader: "varying vec3 vNormal;void main() {float intensity = pow( 0.22 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 2.5 ); gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;}",
-                side: THREE.BackSide,
-                blending: THREE.AdditiveBlending,
-                transparent: true,
-                // opacity: 0.5,
-            }   );
-                
-        var atmosphereGeo = new THREE.SphereGeometry( 1.4, 64, 32 );
-        var atmosphere = new THREE.Mesh( atmosphereGeo, customMaterial );
-        scene.add( atmosphere );
-
-        
-        
-        
-        
-    }
-
 //  Skybox
     {
         const loader = new THREE.CubeTextureLoader();
@@ -166,8 +162,11 @@ import { Satellite } from './satellite.js';
           '../static/space_bk.png',
           '../static/space_bk.png',
           '../static/space_bk.png',
-        ]);
-        scene.background = texture;
+        ], function() {
+            scene.background = texture;
+            requestRenderIfNotRequested();
+        });
+        
     }
 
     function moveSat() {
@@ -253,7 +252,6 @@ import { Satellite } from './satellite.js';
             camera.updateProjectionMatrix();
         }
 
-        
         renderer.render( scene, camera );
     }
     render();

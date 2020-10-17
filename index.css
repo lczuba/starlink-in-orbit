@@ -46,6 +46,7 @@ canvas {
     flex-direction: row;
     align-items: center;
     /* justify-content: center;  */
+    cursor: pointer;
 }
 
 .nav-item:hover {
@@ -53,84 +54,27 @@ canvas {
 }
 
 svg {
-    min-width: 2rem;
+    min-width: 1.2rem;
 }
 
 
-
-#ui-box {
-    left: 0;
+#ui_box {
+    left: -20rem;
     top: 0;
     position: fixed;
-
     width: 20rem;
-    
-    color: var(--text-secondary);
+    height: 100vh;
+    background-color: yellow;
+    opacity: 0.5;
+    background-color: grey;
+    transition: left 1s;
 }
 
-.line-box {
-    border: 2px solid blanchedalmond;
-}
-
-.list-box {
-    max-height: 400px;
-    overflow: auto;
-    list-style:none;
+.ui_box_item {
     display: none;
+    margin: 2rem;
 }
 
-.child {
-    margin: 5px;
-    border: 1px solid blanchedalmond;
-    background-color: rgba(255, 235, 205, 0.4);
-    padding: 5px;
-}
-
-.child:hover {
-    background-color: rgba(255, 235, 205, 0.5);
-
-}
-
-h4 {
-    text-align: center;
-    font-size: 16px;
-    margin: 8px;
-}
-
-.line-box:hover > .list-box {
-    display: block;
-}
-
-/* ///////////////////// */
-
-#satellite-info {
-    position: fixed;
-    top: 0;
-    right: 0;
-
-    padding: 5px;
-
-    width: 20rem;
-    height: 0rem;
-    
-    border: 2px solid blanchedalmond;
-    border-radius: 3px;
-    background-color: rgba(255, 235, 205, 0.4);
-    transition: 0.5s height, 0.7s opacity;
-
-    overflow: hidden;
-    opacity: 0;
-}
-
-.satellite-info-clicked {
-    background-color: violet;
-}
-
-#satellite-info-up {
-    text-align: center;
-    background-color: rgba(255, 235, 205, 0.527);
-
-}
 
 /* /////////////////////////// */
 /* SCROLLBAR */

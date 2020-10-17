@@ -1,4 +1,3 @@
-
 const data = [
     {
         name: 'Starlink Satellites',
@@ -62,7 +61,7 @@ function getGroupSatelite(n) {
 };
 
 function getNumberOfGroupsSatellites() {
-    return (data.length);
+    return data.length;
 }
 
 export {getGroupSatelite, getNumberOfGroupsSatellites};

@@ -1,12 +1,35 @@
-const nav_satellites = document.getElementById("nav_satellites");
-const nav_time = document.getElementById("nav_time");
-const nav_options = document.getElementById("nav_options");
-const nav_about = document.getElementById("nav_about");
+const nav_items = document.getElementsByClassName("nav-item");
+  const nav_satellites = document.getElementById("nav_satellites");
+  const nav_time = document.getElementById("nav_time");
+  const nav_options = document.getElementById("nav_options");
+  const nav_about = document.getElementById("nav_about");
+  let nav_itemIsClicked = false;
+
+const ui_box = document.getElementById("ui_box");
+const ui_box_items = document.getElementsByClassName("ui_box_item");
+
+for (const item of nav_items){
+  item.addEventListener('click', function(){
+    
+    if(nav_itemIsClicked && ui_box.getAttribute("state") == item.id) {
+      ui_box.style.left = '-20rem';
+      nav_itemIsClicked = false;
+    } 
+    else {
+      for(const ui_box_item of ui_box_items) ui_box_item.style.display = 'none';
+      const ui_box_item = document.getElementById("ui_box_" + item.id);
+      ui_box_item.style.display = 'block';
+      ui_box.style.left = '0';
+      nav_itemIsClicked = true;
+    }
+    
+    ui_box.setAttribute("state", item.id);
+  })
+}
 
 nav_satellites.addEventListener('click', function(){
-
+  
 });
-
 
 // const satellitesHTML = document.getElementById('satellites');
 // const satelliteInfoHTML = document.getElementById('satellite-info');
