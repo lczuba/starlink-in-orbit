@@ -1,13 +1,15 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 
 class Satellite {
-    constructor(data) {
-        this.tle = data;
+    constructor(data , tle) {
+        this.tle = tle;
+        // this.data = data;
+        this.display = data.display;
         try {
             this.name = window.TLE.getSatelliteName(this.tle);
             this.info = window.TLE.getSatelliteInfo(this.tle);
             this.isValid = true;
-            this.createSatelliteMesh();
+            this.createSatelliteMesh(data);
             
         } catch(e) {
             this.isValid = false;
@@ -15,10 +17,11 @@ class Satellite {
         }
     }
 
-    createSatelliteMesh() {
+    createSatelliteMesh(data) {
             const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
             this.mesh = new THREE.Sprite( spriteMaterial );
             this.mesh.scale.set(0.005, 0.005, 0.005);
+            this.mesh.visible = data.display;
             this.updateLatLng();
     }
 

@@ -6,37 +6,38 @@ import { Satellite } from './satellite.js';
 
 (function(){
     const group = [];
-    const satellites = [];
     const globals = {
         clock: new THREE.Clock(),
         updateTimer: 0,
         setUpdateTime: 5,
     }
 
-    function createSatellitesObj(data) {
-        if(data.display) {
-            data.tle.forEach((tle) => {
-                let sat = new Satellite(tle);
-                data.satellites.push(sat);
+    function addGroupOfMeshsToScene(data){
+            data.satellites.forEach((sat) => {
                 if(sat.isValid) {
-                    sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
                     scene.add( sat.mesh );
-                    satellites.push(sat);
                 } 
             })
-            console.log(globals.clock.getElapsedTime());
             requestRenderIfNotRequested();
-        }  
+    };
+
+    function createSatellitesObj(data) {
+            data.tle.forEach((tle) => {
+                let sat = new Satellite(data, tle);
+                data.satellites.push(sat);
+                sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
+            })
     } 
 
     function createGroupOfSatellites() {
         const numberOfGroup = DATA.getNumberOfGroupsSatellites();
         for(let i=0; i<numberOfGroup; i++) {
             DATA.getGroupSatelite(i).then(
-                dataObj => {
-                    group.push(dataObj);
-                    console.log(dataObj);
-                    createSatellitesObj(dataObj);
+                data => {
+                    group.push(data);
+                    createSatellitesObj(data);
+                    addGroupOfMeshsToScene(data);
+                    UI.createGroupOfSatellites(data, function() { requestRenderIfNotRequested() } );
                 },
                 error => {
                     console.log(error);
@@ -170,9 +171,13 @@ import { Satellite } from './satellite.js';
     }
 
     function moveSat() {
-        satellites.forEach((sat) => {
-            sat.updateLatLng();
-        });
+        group.forEach((group) => {
+            if(group.display) {
+                group.satellites.forEach((sat) => {
+                    sat.updateLatLng();
+                });
+            }
+        })
         requestRenderIfNotRequested();
         globals.updateTimer = globals.setUpdateTime;
     }

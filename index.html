@@ -22,7 +22,7 @@
                         d="M502.60969,310.04206l-96.70393,96.71625a31.88151,31.88151,0,0,1-45.00765,0L280.572,326.34115l-9.89231,9.90759a190.56343,190.56343,0,0,1-5.40716,168.52287c-4.50077,8.50115-16.39342,9.59505-23.20707,2.79725L134.54715,400.05428l-17.7999,17.79929c.70324,2.60972,1.60965,5.00067,1.60965,7.79793a32.00544,32.00544,0,1,1-32.00544-32.00434c2.79735,0,5.18838.90637,7.7982,1.60959l17.7999-17.79929L4.43129,269.94287c-6.798-6.81342-5.70409-18.6119,2.79735-23.20627a190.58161,190.58161,0,0,1,168.52864-5.407l9.79854-9.79821-80.31053-80.41716a32.002,32.002,0,0,1,0-45.09987L201.96474,9.29814A31.62639,31.62639,0,0,1,224.46868,0a31.99951,31.99951,0,0,1,22.59759,9.29814l80.32615,80.30777,47.805-47.89713a33.6075,33.6075,0,0,1,47.50808,0l47.50807,47.50645a33.63308,33.63308,0,0,1,0,47.50644l-47.805,47.89713L502.71908,265.036A31.78938,31.78938,0,0,1,502.60969,310.04206ZM219.56159,197.433l73.82505-73.82252-68.918-68.9-73.80942,73.80689Zm237.74352,90.106-68.90233-68.9156-73.825,73.82252,68.918,68.9Z">
                     </path>
                 </svg>
-                <span>Satellites</span> 
+                <span>Satellites</span>
             </li>
             <li id="nav_time" class="nav-item">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="clock"
@@ -55,33 +55,78 @@
                 <span>About</span>
             </li>
         </ul>
-       
+
     </nav>
 
     <div state="nav_satellites" id="ui_box">
 
-        <div class="ui_box_item" id="ui_box_nav_satellites">
-            Satellites
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut iaculis a eros congue pulvinar. Quisque sit amet viverra libero, eget blandit ipsum. Suspendisse imperdiet eget lacus in tempus. In semper euismod ullamcorper. Morbi non malesuada tortor, eu congue tellus. Nullam eu fringilla orci. Sed vitae tempus urna. Nam a hendrerit arcu. Sed egestas nunc id consectetur auctor. Mauris nec nibh elementum nulla auctor porta placerat eget est. Quisque nunc magna, gravida et tempor nec, semper non sapien. Cras magna magna, maximus eu erat ornare, commodo vulputate diam. Fusce finibus turpis quam, eget sagittis massa congue a. Suspendisse nec velit a risus efficitur ultrices. Mauris vitae euismod mauris.</p>
+        <div class="ui-box-page" id="ui_box_nav_satellites">
+            <h1>Satellite's groups</h1>
+
+            <div id="ui_box_page_satellites" class="ui-box-page-main">
+                <div class="satellite-group-element">
+                    <div class="satellite-group-bar">
+                        <input class="group-display" type="checkbox">
+    
+                        <div class="group-name">
+                            <p>name-group</p>
+                        </div>
+    
+                        <div class="group-counter">123</div>
+    
+                        <div class="group-arrow-list">
+                            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="caret-down"
+                            class="svg-inline--fa fa-caret-down fa-w-10" role="img" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 320 512">
+                            <path fill="currentColor"
+                                d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z">
+                            </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div dropped="false" class="satellite-group-list">
+                        <div class="satellite-group-list-element">
+                            name-satelite
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
         </div>
 
-        <div class="ui_box_item" id="ui_box_nav_time">
-            Time
-            <p>Integer euismod tellus libero, sit amet eleifend mi malesuada ut. Praesent eget ante vel purus ultrices ullamcorper quis viverra nibh. Donec consequat feugiat turpis, eget aliquet ipsum venenatis sit amet. In gravida placerat erat vel porta. Nunc efficitur at turpis quis porta. Phasellus porta sollicitudin leo posuere euismod. Mauris elementum commodo viverra. Pellentesque eget ipsum ante. Quisque eu lacinia arcu. Curabitur gravida gravida dolor, vel bibendum justo. Nam feugiat id libero sed porttitor. Phasellus ut lacus et quam tempor finibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris condimentum nibh id massa convallis, ac blandit lectus ullamcorper. Nullam fermentum urna eget fermentum imperdiet.</p>
+        <div class="ui-box-page" id="ui_box_nav_time">
+            <h1>Time</h1>
+
         </div>
 
-        <div class="ui_box_item" id="ui_box_nav_options">
+        <div class="ui-box-page" id="ui_box_nav_options">
             Options
-            <p>Nulla vitae massa erat. Nullam mattis eu neque et blandit. Mauris ac pretium velit. Aenean sollicitudin enim ac nisl porta ultrices. Suspendisse pulvinar elit purus, non accumsan libero condimentum nec. Nulla risus ex, rutrum a rutrum sed, commodo et purus. Proin volutpat ornare gravida. Vestibulum in erat vel tortor dictum fringilla. Duis viverra nibh mi, at blandit felis pretium vel. Donec viverra interdum eros, a tristique elit sagittis vitae. Pellentesque id lorem quis dui dignissim malesuada. Quisque rutrum sem id dui fringilla, a scelerisque lectus vestibulum.</p>
+            <p>Nulla vitae massa erat. Nullam mattis eu neque et blandit. Mauris ac pretium velit. Aenean sollicitudin
+                enim ac nisl porta ultrices. Suspendisse pulvinar elit purus, non accumsan libero condimentum nec. Nulla
+                risus ex, rutrum a rutrum sed, commodo et purus. Proin volutpat ornare gravida. Vestibulum in erat vel
+                tortor dictum fringilla. Duis viverra nibh mi, at blandit felis pretium vel. Donec viverra interdum
+                eros, a tristique elit sagittis vitae. Pellentesque id lorem quis dui dignissim malesuada. Quisque
+                rutrum sem id dui fringilla, a scelerisque lectus vestibulum.</p>
         </div>
 
-        <div class="ui_box_item" id="ui_box_nav_about">
+        <div class="ui-box-page" id="ui_box_nav_about">
             Options
-            <p>Praesent tristique, enim nec scelerisque feugiat, metus tellus malesuada est, sit amet vestibulum nisi nibh tincidunt urna. In lacinia diam ultricies eleifend tincidunt. Cras in velit at orci maximus facilisis et ac felis. Duis dolor enim, scelerisque elementum ultrices vitae, commodo eu eros. Nulla iaculis, purus a pharetra rhoncus, turpis risus imperdiet lectus, eu aliquet metus dolor non est. Phasellus efficitur sem interdum ipsum molestie consequat. Quisque malesuada ipsum lectus, ac fringilla ante suscipit id. Phasellus at purus nec turpis maximus blandit in ac sem. Ut laoreet luctus nisl, eget condimentum ante ultricies varius.
+            <p>Praesent tristique, enim nec scelerisque feugiat, metus tellus malesuada est, sit amet vestibulum nisi
+                nibh tincidunt urna. In lacinia diam ultricies eleifend tincidunt. Cras in velit at orci maximus
+                facilisis et ac felis. Duis dolor enim, scelerisque elementum ultrices vitae, commodo eu eros. Nulla
+                iaculis, purus a pharetra rhoncus, turpis risus imperdiet lectus, eu aliquet metus dolor non est.
+                Phasellus efficitur sem interdum ipsum molestie consequat. Quisque malesuada ipsum lectus, ac fringilla
+                ante suscipit id. Phasellus at purus nec turpis maximus blandit in ac sem. Ut laoreet luctus nisl, eget
+                condimentum ante ultricies varius.
 
-                Ut sit amet dapibus ligula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec eu blandit lacus, ac congue dui. Curabitur nulla sem, pretium non augue non, aliquet tristique magna. Mauris non purus non ante ultricies facilisis. Nam elit enim, cursus nec nisl ac, rutrum auctor orci. Duis viverra at sapien iaculis suscipit. Duis auctor lorem neque, eget dictum elit efficitur non. Quisque consectetur diam non quam tempor ullamcorper. Pellentesque sagittis quam id nunc semper vehicula. Proin condimentum aliquam purus sit amet ultricies.</p>
+                Ut sit amet dapibus ligula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+                inceptos himenaeos. Donec eu blandit lacus, ac congue dui. Curabitur nulla sem, pretium non augue non,
+                aliquet tristique magna. Mauris non purus non ante ultricies facilisis. Nam elit enim, cursus nec nisl
+                ac, rutrum auctor orci. Duis viverra at sapien iaculis suscipit. Duis auctor lorem neque, eget dictum
+                elit efficitur non. Quisque consectetur diam non quam tempor ullamcorper. Pellentesque sagittis quam id
+                nunc semper vehicula. Proin condimentum aliquam purus sit amet ultricies.</p>
         </div>
-        
+
     </div>
 
     <script type="module" src="js/script.js"></script>

@@ -1,14 +1,14 @@
 const data = [
     {
         name: 'Starlink Satellites',
-        display: true,
+        display: false,
         color: '#00ff00',
         url: '../data/starlink.txt',
         satellites: [],
     },
     {
         name: 'Galileo Satellites',
-        display: true,
+        display: false,
         color: '#00ff00',
         url: '../data/galileo.txt',
         satellites: [],
@@ -22,16 +22,30 @@ const data = [
     },
     {
         name: 'GEO Protected Zone Objects',
-        display: true,
+        display: false,
         color: '#00ff00',
         url: '../data/geo.txt',
         satellites: [],
     },
     {
         name: 'Intelsat Satellites',
-        display: true,
+        display: false,
         color: '#00ff00',
         url: '../data/intelsat.txt',
+        satellites: [],
+    },
+    {
+        name: 'COSMOS 2251 Debris',
+        display: false,
+        color: '#00ff00',
+        url: '../data/cosmos.txt',
+        satellites: [],
+    },
+    {
+        name: 'Space Stations',
+        display: false,
+        color: '#00ff00',
+        url: '../data/stations.txt',
         satellites: [],
     },
 ]
