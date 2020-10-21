@@ -1,43 +1,34 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
-import * as UI from './ui.js';
 import * as DATA from './data.js';
-import { Satellite } from './satellite.js';
+import { GroupOfSatellites } from './GroupOfSatellites.js';
+import * as UI from './ui.js';
+
+
 
 (function(){
-    const group = [];
+    const groups = [];
     const globals = {
         clock: new THREE.Clock(),
-        updateTimer: 0,
-        setUpdateTime: 5,
+        updateTime: 0,
+        resetUpdateTime : function() {
+            globals.updateTime = 1;
+        },
     }
-
-    function addGroupOfMeshsToScene(data){
-            data.satellites.forEach((sat) => {
-                if(sat.isValid) {
-                    scene.add( sat.mesh );
-                } 
-            })
-            requestRenderIfNotRequested();
-    };
-
-    function createSatellitesObj(data) {
-            data.tle.forEach((tle) => {
-                let sat = new Satellite(data, tle);
-                data.satellites.push(sat);
-                sat.setSatelliteProps(moveToTargetAnimation, camera, scene);
-            })
-    } 
 
     function createGroupOfSatellites() {
         const numberOfGroup = DATA.getNumberOfGroupsSatellites();
         for(let i=0; i<numberOfGroup; i++) {
             DATA.getGroupSatelite(i).then(
                 data => {
-                    group.push(data);
-                    createSatellitesObj(data);
-                    addGroupOfMeshsToScene(data);
-                    UI.createGroupOfSatellites(data, function() { requestRenderIfNotRequested() } );
+                    const group = new GroupOfSatellites(
+                        data, 
+                        scene, 
+                        camera, 
+                        function() { requestRenderIfNotRequested() }
+                    );
+                    groups.push(group);
+                    UI.createGroupOfSatellites(group);
                 },
                 error => {
                     console.log(error);
@@ -53,7 +44,6 @@ import { Satellite } from './satellite.js';
     const renderer = new THREE.WebGLRenderer();
     let renderRequested = false;
     document.body.appendChild( renderer.domElement );
-
     const fov = 45;
     const aspect = 2;
     const near = 0.1;
@@ -170,16 +160,9 @@ import { Satellite } from './satellite.js';
         
     }
 
-    function moveSat() {
-        group.forEach((group) => {
-            if(group.display) {
-                group.satellites.forEach((sat) => {
-                    sat.updateLatLng();
-                });
-            }
-        })
-        requestRenderIfNotRequested();
-        globals.updateTimer = globals.setUpdateTime;
+    function updatePositionOfGroupSatellites() {
+        groups.forEach((group) => group.updatePositionOfSatellites() );
+        globals.resetUpdateTime();
     }
 
     const moveToTargetAnimation = {
@@ -237,12 +220,12 @@ import { Satellite } from './satellite.js';
     }
 
     setInterval(function() {
-        globals.updateTimer -= globals.clock.getDelta();
+        globals.updateTime -= globals.clock.getDelta();
         
         //if camera is going to target don't update position of 'million' satelite
         if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTargetAnimation.move();
         else {
-            if ( globals.updateTimer <= 0 ) moveSat();
+            if ( globals.updateTime <= 0 ) updatePositionOfGroupSatellites();
             controls.enableRotate = true;
         }
         controls.update();

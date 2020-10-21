@@ -4,51 +4,66 @@ const data = [
         display: false,
         color: '#00ff00',
         url: '../data/starlink.txt',
-        satellites: [],
     },
     {
         name: 'Galileo Satellites',
         display: false,
         color: '#00ff00',
-        url: '../data/galileo.txt',
-        satellites: [],
+        url: '../data/galileo.txt',                                                  
     },
     {
         name: 'Weather Satellites',
         display: true,
         color: '#00ff00',
         url: '../data/weather.txt',
-        satellites: [],
     },
     {
         name: 'GEO Protected Zone Objects',
         display: false,
         color: '#00ff00',
-        url: '../data/geo.txt',
-        satellites: [],
+        url: '../data/geo.txt',    
     },
     {
         name: 'Intelsat Satellites',
         display: false,
         color: '#00ff00',
         url: '../data/intelsat.txt',
-        satellites: [],
     },
     {
         name: 'COSMOS 2251 Debris',
         display: false,
         color: '#00ff00',
         url: '../data/cosmos.txt',
-        satellites: [],
     },
     {
         name: 'Space Stations',
         display: false,
         color: '#00ff00',
         url: '../data/stations.txt',
-        satellites: [],
     },
 ]
+
+const handler = {
+    get(target, key) {
+        // console.log(`get value from: ${key}`);
+        return target[key];
+    },
+
+    set(target, key, value) {
+        console.log(`set value ${value} to: ${key}`);
+       
+        if(key === 'display') {
+            target[key] = value;
+            target.satellites.forEach(satellite => {
+                satellite.display = target[key];
+            });
+            return true;
+        }
+        else {
+            return Reflect.set(...arguments);
+        }
+    }
+}
 
 async function loadFile(url) {
     const req = await fetch(url)
@@ -69,8 +84,9 @@ function getGroupSatelite(n) {
     return loadFile(data[n].url)
         .then(parseData)
         .then(tleData => {
-             data[n].tle = tleData;
-             return data[n];
+            data[n].tle = tleData;
+            const objProxy = new Proxy(data[n], handler);
+            return objProxy;
         })
 };
 
@@ -78,4 +94,4 @@ function getNumberOfGroupsSatellites() {
     return data.length;
 }
 
-export {getGroupSatelite, getNumberOfGroupsSatellites};
+export { getGroupSatelite, getNumberOfGroupsSatellites };

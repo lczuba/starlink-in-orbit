@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="./index.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
 
-    <script type="module" src="js/tlejs.js"></script>
+    <script type="module" src="./src/tlejs.js"></script>
 </head>
 
 <body>
@@ -64,9 +64,21 @@
             <h1>Satellite's groups</h1>
 
             <div id="ui_box_page_satellites" class="ui-box-page-main">
+            </div>
+        </div>
+
+        <div class="ui-box-page" id="ui_box_nav_time">
+            <h1>Time</h1>
+            <satellite-list-element>test1</satellite-list-element>
+
+        </div>
+
+        <div class="ui-box-page" id="ui_box_nav_options">
+            <h1>Options</h1>
+            <div id="ui_box_page_options" class="ui-box-page-main">
                 <div class="satellite-group-element">
                     <div class="satellite-group-bar">
-                        <input class="group-display" type="checkbox">
+                        <input class="checkbox-display group-display" type="checkbox">
     
                         <div class="group-name">
                             <p>name-group</p>
@@ -85,28 +97,11 @@
                         </div>
                     </div>
                     <div dropped="false" class="satellite-group-list">
-                        <div class="satellite-group-list-element">
-                            name-satelite
-                        </div>
+                        <satellite-list-element>test1</satellite-list-element>
                     </div>
                 </div>
-                
             </div>
-        </div>
 
-        <div class="ui-box-page" id="ui_box_nav_time">
-            <h1>Time</h1>
-
-        </div>
-
-        <div class="ui-box-page" id="ui_box_nav_options">
-            Options
-            <p>Nulla vitae massa erat. Nullam mattis eu neque et blandit. Mauris ac pretium velit. Aenean sollicitudin
-                enim ac nisl porta ultrices. Suspendisse pulvinar elit purus, non accumsan libero condimentum nec. Nulla
-                risus ex, rutrum a rutrum sed, commodo et purus. Proin volutpat ornare gravida. Vestibulum in erat vel
-                tortor dictum fringilla. Duis viverra nibh mi, at blandit felis pretium vel. Donec viverra interdum
-                eros, a tristique elit sagittis vitae. Pellentesque id lorem quis dui dignissim malesuada. Quisque
-                rutrum sem id dui fringilla, a scelerisque lectus vestibulum.</p>
         </div>
 
         <div class="ui-box-page" id="ui_box_nav_about">
@@ -129,7 +124,7 @@
 
     </div>
 
-    <script type="module" src="js/script.js"></script>
+    <script type="module" src="./src/script.js"></script>
 </body>
 
 </html>

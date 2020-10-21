@@ -1,43 +1,48 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 
 class Satellite {
-    constructor(data , tle) {
+    constructor(tle, scene, camera, requestRenderIfNotRequested) {
         this.tle = tle;
-        // this.data = data;
-        this.display = data.display;
+        this.scene = scene;
+        this.camera = camera;
+        this.requestRenderIfNotRequested = requestRenderIfNotRequested;
+
+        this.display = false;
         try {
             this.name = window.TLE.getSatelliteName(this.tle);
             this.info = window.TLE.getSatelliteInfo(this.tle);
             this.isValid = true;
-            this.createSatelliteMesh(data);
-            
+            this.createSatelliteMesh();
+            this.updateSatellitePosition();
         } catch(e) {
             this.isValid = false;
             console.log("Error: " + this.name);
         }
     }
 
-    createSatelliteMesh(data) {
+    createSatelliteMesh() {
             const spriteMaterial = new THREE.SpriteMaterial( { color: 0x00ff00 } );
             this.mesh = new THREE.Sprite( spriteMaterial );
-            this.mesh.scale.set(0.005, 0.005, 0.005);
-            this.mesh.visible = data.display;
-            this.updateLatLng();
+            this.mesh.scale.set(0.005, 0.005, 0.005); 
     }
 
-    updateLatLng() {
-        if(this.isValid) {
-            // const data = window.TLE.getLatLngObj(this.tle);
-            this.info = window.TLE.getSatelliteInfo(this.tle);
-            // this.info.lat = data.lat;
-            // this.info.lng = data.lng;
+    addSatelliteToScene() {
+        this.display = true;
+        this.scene.add(this.mesh);
+    }
 
+    removeSatelliteFromScene() {
+        this.display = false;
+        this.scene.remove(this.mesh);
+    }
+
+    updateSatellitePosition() {
+        if(this.isValid) {
+            this.info = window.TLE.getSatelliteInfo(this.tle);
             let angleLat = THREE.MathUtils.degToRad(this.info.lat);
             let height = 1 + (this.info.height / 6371);
-
             this.mesh.position.y = height * Math.sin(angleLat);
             let radius = height * Math.cos(angleLat);
-
             let angleLng = THREE.MathUtils.degToRad(this.info.lng * -1);
             this.mesh.position.x = radius * Math.cos(angleLng);
             this.mesh.position.z = radius * Math.sin(angleLng);
@@ -48,10 +53,8 @@ class Satellite {
         this.mesh.material.color = new THREE.Color( newColor );
     }
 
-    setSatelliteProps(moveToTargetAnimation, camera, scene) {
+    setSatelliteProps(moveToTargetAnimation) {
         this.moveToTargetAnimation = moveToTargetAnimation;
-        this.camera = camera;
-        this.scene = scene;
     }
 
     moveToSatellite()  {
@@ -90,8 +93,8 @@ class Satellite {
 
     async createSateliteOrbits() {
         let date = new Date().getTime()
-        let fromDate = date - 1000 * 60 * 60 * 100;
-        let toDate = date + 1000 * 60 * 60 * 100 ;
+        let fromDate = date - 10000 * 60 * 60 * 10;
+        let toDate = date + 10000 * 60 * 60 * 10 ;
         console.log(fromDate, date, toDate);
         let pointsDeg = [];
 
@@ -122,6 +125,7 @@ class Satellite {
         let geometry = new THREE.BufferGeometry().setFromPoints( pointsXYZ );
         let material = new THREE.LineBasicMaterial( {color: 0x004d66} );
         this.line = new THREE.Line( geometry, material);
+        this.line.visible = this.display;
         this.scene.add(this.line);
         
     }

@@ -66,7 +66,6 @@ svg {
     position: fixed;
     width: 20rem;
     height: 100vh;
-    background-color: yellow;
     opacity: 0.8;
     background-color: grey;
     transition: left 1s;
@@ -84,20 +83,17 @@ svg {
 }
 
 /* ///////////////////////////////// */
-.satellite-group-element {
+.satellite-group {
     display: flex;
-    flex-direction: column;
 }
 
 .satellite-group-bar {
     display: flex;
     padding: 0.5rem;
-    /* margin: 0.3rem; */
     
     align-items: center;
     justify-content: space-between;
 
-    /* border: 1px solid black; */
     background-color: tan;
 }
 
@@ -113,7 +109,6 @@ svg {
 .group-name {
     display: flex;
     align-items: center;
-    /* justify-content: space-around; */
     max-width: 50%;
 
 }
@@ -131,17 +126,26 @@ svg {
 }
 
 .satellite-group-list {
-    /* background-color: thistle; */
-    display: none;
-    height: 0;
+    /* display: none;
+    height: 0; */
     overflow: scroll;
     cursor: pointer;
+    transition: height 2s;
+}
+
+.satellite-group-list[dropped] {
+    display: block;
+    height: 200px;
+    background-color: yellow;
+}
+
+.satellite-group-list-element {
+    display: flex;
 }
 
 .satellite-group-list-element:hover {
     opacity: 0.2;
 }
-
 
 
 /* /////////////////////////// */
