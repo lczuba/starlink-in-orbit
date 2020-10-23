@@ -43,28 +43,6 @@ const data = [
     },
 ]
 
-const handler = {
-    get(target, key) {
-        // console.log(`get value from: ${key}`);
-        return target[key];
-    },
-
-    set(target, key, value) {
-        console.log(`set value ${value} to: ${key}`);
-       
-        if(key === 'display') {
-            target[key] = value;
-            target.satellites.forEach(satellite => {
-                satellite.display = target[key];
-            });
-            return true;
-        }
-        else {
-            return Reflect.set(...arguments);
-        }
-    }
-}
-
 async function loadFile(url) {
     const req = await fetch(url)
     return req.text();
@@ -85,8 +63,7 @@ function getGroupSatelite(n) {
         .then(parseData)
         .then(tleData => {
             data[n].tle = tleData;
-            const objProxy = new Proxy(data[n], handler);
-            return objProxy;
+            return data[n];
         })
 };
 

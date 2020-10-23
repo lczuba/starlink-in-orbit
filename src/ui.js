@@ -1,49 +1,43 @@
-import SatelliteGroup from './components/SatelliteGroup.js'
-import SatelliteListElement from './components/SatelliteListElement.js'
+import SatellitesGroup from './components/SatellitesGroup.js'
+customElements.define('satellite-group', SatellitesGroup);
 
-customElements.define('satellite-group', SatelliteGroup);
-customElements.define('satellite-list-element', SatelliteListElement);
-
-const nav_items = document.getElementsByClassName("nav-item");
-  const nav_satellites = document.getElementById("nav_satellites");
-  const nav_time = document.getElementById("nav_time");
-  const nav_options = document.getElementById("nav_options");
-  const nav_about = document.getElementById("nav_about");
+// Navbar
+{
+  const navbar__items = document.getElementsByClassName('navbar__item');
   let nav_itemIsClicked = false;
-
-const ui_box = document.getElementById("ui_box");
-const ui_box_pages = document.getElementsByClassName("ui-box-page");
-
-for (const item of nav_items){
-  item.addEventListener('click', function(){
-    
-    if(nav_itemIsClicked && ui_box.getAttribute("state") == item.id) {
-      ui_box.style.left = '-20rem';
-      nav_itemIsClicked = false;
-    } 
-    else {
-      for(const ui_box_page of ui_box_pages) ui_box_page.style.display = 'none';
-      const ui_box_page = document.getElementById("ui_box_" + item.id);
-      ui_box_page.style.display = 'block';
-      ui_box.style.left = '0';
-      nav_itemIsClicked = true;
-    }
-    
-    ui_box.setAttribute("state", item.id);
-  })
+  
+  const toolbox = document.querySelector('.toolbox');
+  const toolbox__pages = document.getElementsByClassName('toolbox__page');
+  
+  for (const item of navbar__items){
+    item.addEventListener('click', function(){
+      if(nav_itemIsClicked && toolbox.getAttribute('type') == item.getAttribute('type')) {
+        toolbox.classList.remove('toolbox--active');
+        nav_itemIsClicked = false;
+      } 
+      else {
+        for(const toolbox__page of toolbox__pages) toolbox__page.classList.remove('toolbox__page--active');
+        const toolbox__page = document.querySelector(".toolbox__page--" + item.getAttribute('type'));
+        toolbox__page.classList.add('toolbox__page--active');
+        toolbox.classList.add('toolbox--active');
+        nav_itemIsClicked = true;
+      }
+      
+      toolbox.setAttribute("type", item.getAttribute('type'));
+    })
+  }
 }
 
-nav_satellites.addEventListener('click', function(){
-  
-});
 
 ///////////////////////////////////////////////////////////////////////////////////////
-const satellite_group = document.getElementById("ui_box_page_satellites");
 
-function createGroupOfSatellites(data, requestRenderIfNotRequested) {
-  const SatelliteGroupDOM = new SatelliteGroup();
-  SatelliteGroupDOM.state = data;
-  satellite_group.appendChild(SatelliteGroupDOM);
+function createGroupOfSatellites(data) {
+  const page_satellites = document.querySelector('.toolbox__page--satellites');
+  const page_satellites_body = page_satellites.querySelector('.toolbox__body');
+
+  const satellite_group = new SatellitesGroup();
+  satellite_group.state = data;
+  page_satellites_body.appendChild(satellite_group);
   }
 
-export {createGroupOfSatellites, createOptionElement};
+export {createGroupOfSatellites};

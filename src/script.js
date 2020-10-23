@@ -4,8 +4,6 @@ import * as DATA from './data.js';
 import { GroupOfSatellites } from './GroupOfSatellites.js';
 import * as UI from './ui.js';
 
-
-
 (function(){
     const groups = [];
     const globals = {
@@ -36,7 +34,6 @@ import * as UI from './ui.js';
             )
         }
     }
-
     createGroupOfSatellites();
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -51,22 +48,18 @@ import * as UI from './ui.js';
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set( 0, 0, 100);
     camera.lookAt( 0, 0, 0);
-
-   
-
     const scene = new THREE.Scene();
     
-    // x,y,z lines
-    // const axesHelper = new THREE.AxesHelper( 2 );
-    // scene.add( axesHelper )
 
-    //main light
-    const color = 0xFFFFFF;
-    const intensity = 2;
-    let light = new THREE.AmbientLight(color, intensity);
-    scene.add(light);
+    // Main light
+    {
+        const color = 0xFFFFFF;
+        const intensity = 2;
+        let light = new THREE.AmbientLight(color, intensity);
+        scene.add(light);
+    }
 
-    //responsive
+    // Responsive
     function resizeRendererToDisplaySize( renderer ) {
         const canvas = renderer.domElement;
         const pixelRatio = window.devicePixelRatio;
@@ -79,8 +72,7 @@ import * as UI from './ui.js';
         return needResize;
     }
 
-///////////////////////////
-//  Create globe, texture etc.
+    // Create globe, texture etc.
     {  
         const loader = new THREE.TextureLoader;
         const texture = loader.load('../static/hologram-map.svg', function ( data ) {
@@ -134,8 +126,7 @@ import * as UI from './ui.js';
 
     }
 
-    //  Orbit Controls 
-    
+    // Orbit Controls 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
@@ -143,7 +134,7 @@ import * as UI from './ui.js';
     controls.maxDistance = 10;
     controls.update();
     
-//  Skybox
+    // Skybox
     {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
@@ -157,7 +148,6 @@ import * as UI from './ui.js';
             scene.background = texture;
             requestRenderIfNotRequested();
         });
-        
     }
 
     function updatePositionOfGroupSatellites() {
@@ -221,8 +211,6 @@ import * as UI from './ui.js';
 
     setInterval(function() {
         globals.updateTime -= globals.clock.getDelta();
-        
-        //if camera is going to target don't update position of 'million' satelite
         if( moveToTargetAnimation.isMoveToTargetLat || moveToTargetAnimation.isMoveToTargetLng ) moveToTargetAnimation.move();
         else {
             if ( globals.updateTime <= 0 ) updatePositionOfGroupSatellites();
@@ -233,13 +221,11 @@ import * as UI from './ui.js';
 
     function render() {
         renderRequested = false;
-
         if ( resizeRendererToDisplaySize(renderer) ) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
-
         renderer.render( scene, camera );
     }
     render();

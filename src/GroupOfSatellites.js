@@ -31,23 +31,13 @@ class GroupOfSatellites {
 
     addGroupOfSatellitesToScene() {
         this.display = true;
-        this.satellites.forEach((satellite) => {
-            if(satellite.isValid){
-                satellite.display = true
-                this.scene.add( satellite.mesh );
-            } 
-        })
+        this.satellites.forEach((satellite) => { satellite.addSatelliteToScene() });
         this.requestRenderIfNotRequested();
     };
 
     removeGroupOfSatellitesFromScene() {
         this.display = false;
-        this.satellites.forEach((satellite) => {
-            if(satellite.isValid) {
-                satellite.display = false;
-                this.scene.remove( satellite.mesh );
-            } 
-        })
+        this.satellites.forEach((satellite) => { satellite.removeSatelliteFromScene() });
         this.requestRenderIfNotRequested();
     };
 

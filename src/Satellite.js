@@ -7,17 +7,36 @@ class Satellite {
         this.camera = camera;
         this.requestRenderIfNotRequested = requestRenderIfNotRequested;
 
-        this.display = false;
+        this._display = false;
         try {
             this.name = window.TLE.getSatelliteName(this.tle);
             this.info = window.TLE.getSatelliteInfo(this.tle);
             this.isValid = true;
+            this.orbitLineLength = 0;  
             this.createSatelliteMesh();
-            this.updateSatellitePosition();
         } catch(e) {
             this.isValid = false;
-            console.log("Error: " + this.name);
+            console.log("Invalid " + this.name + " TLE data" );
         }
+    }
+
+    set display(v) {
+        this._display = v;
+        if(this.activeElementUpdate) { this.activeElementUpdate() } 
+    }
+
+    get display() {
+        
+        return this._display;
+    }
+
+    set info(v) {
+        this._info = v;
+        if(this.activeElementUpdate) { this.activeElementUpdate() } 
+    }
+
+    get info() {
+        return this._info;
     }
 
     createSatelliteMesh() {
@@ -27,17 +46,24 @@ class Satellite {
     }
 
     addSatelliteToScene() {
-        this.display = true;
-        this.scene.add(this.mesh);
+        if(this.isValid) {
+            this.display = true;
+            this.updateSatellitePosition();
+            this.scene.add(this.mesh);
+            if(this.orbit) this.scene.add(this.orbit);
+        }
     }
 
     removeSatelliteFromScene() {
-        this.display = false;
-        this.scene.remove(this.mesh);
+        if(this.isValid) {
+            this.display = false;
+            this.scene.remove(this.mesh);
+            if(this.orbit) this.scene.remove(this.orbit);
+        }
     }
 
     updateSatellitePosition() {
-        if(this.isValid) {
+        if(this.isValid && this.display) {
             this.info = window.TLE.getSatelliteInfo(this.tle);
             let angleLat = THREE.MathUtils.degToRad(this.info.lat);
             let height = 1 + (this.info.height / 6371);
@@ -91,21 +117,18 @@ class Satellite {
         this.moveToTargetAnimation.timeAnimationClock = new THREE.Clock();
     }
 
-    async createSateliteOrbits() {
+    async createSateliteOrbit() {
+        if(this.orbit) this.scene.remove(this.orbit);
         let date = new Date().getTime()
-        let fromDate = date - 10000 * 60 * 60 * 10;
-        let toDate = date + 10000 * 60 * 60 * 10 ;
-        console.log(fromDate, date, toDate);
+        let fromDate = date - 10000 * 60 * this.orbitLineLength;
+        let toDate = date + 10000 * 60 * this.orbitLineLength;
         let pointsDeg = [];
-
-        for(let t = fromDate; t <= toDate; t+=50000) {
+        for(let t = fromDate; t <= toDate; t+=100000) {
             pointsDeg.push(window.TLE.getSatelliteInfo(
                 this.tle,
                 t
-            ))
+            ));
         }
-        // console.log( pointsDeg );
-
         let pointsXYZ = [];
         for(let i = 0; i < pointsDeg.length; i++) {
             let orbitPointData = {
@@ -113,27 +136,17 @@ class Satellite {
                 lng: THREE.MathUtils.degToRad(pointsDeg[i].lng) * -1,
                 height: 1 + (pointsDeg[i].height / 6371),
             };
-            // console.log(orbitPointData);
 
             let y = orbitPointData.height * Math.sin(orbitPointData.lat);
             let radius = orbitPointData.height * Math.cos(orbitPointData.lat);
             let x = radius * Math.cos(orbitPointData.lng);
             let z = radius * Math.sin(orbitPointData.lng);
-
             pointsXYZ.push( new THREE.Vector3( x, y, z) );
         }
         let geometry = new THREE.BufferGeometry().setFromPoints( pointsXYZ );
         let material = new THREE.LineBasicMaterial( {color: 0x004d66} );
-        this.line = new THREE.Line( geometry, material);
-        this.line.visible = this.display;
-        this.scene.add(this.line);
-        
-    }
-
-    removeSatelliteOrbit() {
-        // this.scene.remove(this.line[1]);
-        this.scene.remove(this.line);
-        // this.scene.remove(this.line[2]);
+        this.orbit = new THREE.Line( geometry, material);
+        this.scene.add(this.orbit);
     }
 }
 

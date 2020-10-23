@@ -8,7 +8,7 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    color: blanchedalmond;
+    color: white;
 }
 
 canvas {
@@ -29,7 +29,7 @@ canvas {
 
 }
 
-.navbar-nav {
+.navbar__list {
     list-style: none;
     background-color: grey;
 
@@ -40,7 +40,7 @@ canvas {
     justify-content: center;  */
 }
 
-.nav-item {
+.navbar__item {
     padding: 5px;
     display: flex;
     flex-direction: row;
@@ -49,7 +49,7 @@ canvas {
     cursor: pointer;
 }
 
-.nav-item:hover {
+.navbar__item:hover {
     opacity: 0.6;
 }
 
@@ -57,37 +57,44 @@ svg {
     min-width: 1.2rem;
 }
 
-/* //////////////////////////////// */
-
-
-#ui_box {
+/* ///////////////////////////////////////////////// */
+.toolbox {
+    position: fixed;
     left: -20rem;
     top: 0;
-    position: fixed;
     width: 20rem;
     height: 100vh;
     opacity: 0.8;
-    background-color: grey;
+    background-color: gray;
     transition: left 1s;
 }
 
-.ui-box-page {
+.toolbox--active {
+    left: 0;
+}
+
+.toolbox__page {
     display: none;
     padding: 1rem;
     text-align: center;
 }
 
-.ui-box-page-main {
+.toolbox__page--active {
+    display: block;
+}
+
+.toolbox__body{
     height: 100%;
-    /* background-color: violet; */
 }
 
-/* ///////////////////////////////// */
-.satellite-group {
+/* ///////////////////////////////////////////////// */
+
+satellite-group {
     display: flex;
+    flex-direction: column;
 }
 
-.satellite-group-bar {
+.satellite-group__bar {
     display: flex;
     padding: 0.5rem;
     
@@ -97,11 +104,11 @@ svg {
     background-color: tan;
 }
 
-.satellite-group-bar:hover {
-    opacity: 0.8;
+.satellite-group__bar:hover {
+    opacity: 0.9;
 }
 
-.satellite-group-bar p {
+.satellite-group__bar p {
     margin: 0;
     text-align: center;
 }
@@ -110,7 +117,6 @@ svg {
     display: flex;
     align-items: center;
     max-width: 50%;
-
 }
 
 .group-more {
@@ -125,26 +131,53 @@ svg {
     font-size: 0.9rem;
 }
 
-.satellite-group-list {
-    /* display: none;
-    height: 0; */
+.group-arrow-list svg{
+    min-width: 1.2rem;
+}
+
+.satellite-group__list {
+    display: none;
+    height: 0;
     overflow: scroll;
+    overflow-x: hidden;
     cursor: pointer;
     transition: height 2s;
 }
 
-.satellite-group-list[dropped] {
+.satellite-group__list[dropped] {
     display: block;
     height: 200px;
-    background-color: yellow;
 }
 
-.satellite-group-list-element {
+/* ///////////////////////////////////////////////// */
+satellite-list-item {
     display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    background-color: rgb(204, 192, 175);
+    border: 1px, solid, black;
+    margin: 2px;
+
 }
 
-.satellite-group-list-element:hover {
-    opacity: 0.2;
+satellite-list-item:hover {
+    opacity: 0.9;
+}
+
+.group-item__header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid black;
+}
+
+.group-item__body {
+    display: none;
+}
+
+.group-item__body[dropped] {
+    display: block;
 }
 
 

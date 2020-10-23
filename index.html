@@ -13,8 +13,9 @@
 
 <body>
     <nav class="navbar">
-        <ul class="navbar-nav">
-            <li id="nav_satellites" class="nav-item">
+        <ul class="navbar__list">
+
+            <li type="satellites" class="navbar__item">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="satellite"
                     class="svg-inline--fa fa-satellite fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512">
@@ -22,9 +23,10 @@
                         d="M502.60969,310.04206l-96.70393,96.71625a31.88151,31.88151,0,0,1-45.00765,0L280.572,326.34115l-9.89231,9.90759a190.56343,190.56343,0,0,1-5.40716,168.52287c-4.50077,8.50115-16.39342,9.59505-23.20707,2.79725L134.54715,400.05428l-17.7999,17.79929c.70324,2.60972,1.60965,5.00067,1.60965,7.79793a32.00544,32.00544,0,1,1-32.00544-32.00434c2.79735,0,5.18838.90637,7.7982,1.60959l17.7999-17.79929L4.43129,269.94287c-6.798-6.81342-5.70409-18.6119,2.79735-23.20627a190.58161,190.58161,0,0,1,168.52864-5.407l9.79854-9.79821-80.31053-80.41716a32.002,32.002,0,0,1,0-45.09987L201.96474,9.29814A31.62639,31.62639,0,0,1,224.46868,0a31.99951,31.99951,0,0,1,22.59759,9.29814l80.32615,80.30777,47.805-47.89713a33.6075,33.6075,0,0,1,47.50808,0l47.50807,47.50645a33.63308,33.63308,0,0,1,0,47.50644l-47.805,47.89713L502.71908,265.036A31.78938,31.78938,0,0,1,502.60969,310.04206ZM219.56159,197.433l73.82505-73.82252-68.918-68.9-73.80942,73.80689Zm237.74352,90.106-68.90233-68.9156-73.825,73.82252,68.918,68.9Z">
                     </path>
                 </svg>
-                <span>Satellites</span>
+                <span class="navbar__name">Satellites</span>
             </li>
-            <li id="nav_time" class="nav-item">
+
+            <li type="time" class="navbar__item">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="clock"
                     class="svg-inline--fa fa-clock fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512">
@@ -32,9 +34,10 @@
                         d="M256,8C119,8,8,119,8,256S119,504,256,504,504,393,504,256,393,8,256,8Zm92.49,313h0l-20,25a16,16,0,0,1-22.49,2.5h0l-67-49.72a40,40,0,0,1-15-31.23V112a16,16,0,0,1,16-16h32a16,16,0,0,1,16,16V256l58,42.5A16,16,0,0,1,348.49,321Z">
                     </path>
                 </svg>
-                <span>Time</span>
+                <span class="navbar__name">Time</span>
             </li>
-            <li id="nav_options" class="nav-item">
+
+            <li type="options" class="navbar__item">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="cog"
                     class="svg-inline--fa fa-cog fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512">
@@ -42,9 +45,10 @@
                         d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z">
                     </path>
                 </svg>
-                <span>Options</span>
+                <span class="navbar__name">Options</span>
             </li>
-            <li id="nav_about" class="nav-item">
+
+            <li type="about" class="navbar__item">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="info-circle"
                     class="svg-inline--fa fa-info-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 512 512">
@@ -52,74 +56,49 @@
                         d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 110c23.196 0 42 18.804 42 42s-18.804 42-42 42-42-18.804-42-42 18.804-42 42-42zm56 254c0 6.627-5.373 12-12 12h-88c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h12v-64h-12c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h64c6.627 0 12 5.373 12 12v100h12c6.627 0 12 5.373 12 12v24z">
                     </path>
                 </svg>
-                <span>About</span>
+                <span class="navbar__name">About</span>
             </li>
+
         </ul>
 
     </nav>
 
-    <div state="nav_satellites" id="ui_box">
+    <div class="toolbox" type="" >
 
-        <div class="ui-box-page" id="ui_box_nav_satellites">
-            <h1>Satellite's groups</h1>
-
-            <div id="ui_box_page_satellites" class="ui-box-page-main">
+        <div class="toolbox__page toolbox__page--satellites">
+            <div class="toolbox__head">
+                <h1>Satellite's groups</h1>
+            </div>
+            
+            <div class="toolbox__body">
             </div>
         </div>
 
-        <div class="ui-box-page" id="ui_box_nav_time">
-            <h1>Time</h1>
-            <satellite-list-element>test1</satellite-list-element>
-
-        </div>
-
-        <div class="ui-box-page" id="ui_box_nav_options">
-            <h1>Options</h1>
-            <div id="ui_box_page_options" class="ui-box-page-main">
-                <div class="satellite-group-element">
-                    <div class="satellite-group-bar">
-                        <input class="checkbox-display group-display" type="checkbox">
-    
-                        <div class="group-name">
-                            <p>name-group</p>
-                        </div>
-    
-                        <div class="group-counter">123</div>
-    
-                        <div class="group-arrow-list">
-                            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="caret-down"
-                            class="svg-inline--fa fa-caret-down fa-w-10" role="img" xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 320 512">
-                            <path fill="currentColor"
-                                d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z">
-                            </path>
-                            </svg>
-                        </div>
-                    </div>
-                    <div dropped="false" class="satellite-group-list">
-                        <satellite-list-element>test1</satellite-list-element>
-                    </div>
-                </div>
+        <div class="toolbox__page toolbox__page--time">
+            <div class="toolbox__head">
+                <h1>Time</h1>
             </div>
-
+            
+            <div class="toolbox__body">
+            </div>
         </div>
 
-        <div class="ui-box-page" id="ui_box_nav_about">
-            Options
-            <p>Praesent tristique, enim nec scelerisque feugiat, metus tellus malesuada est, sit amet vestibulum nisi
-                nibh tincidunt urna. In lacinia diam ultricies eleifend tincidunt. Cras in velit at orci maximus
-                facilisis et ac felis. Duis dolor enim, scelerisque elementum ultrices vitae, commodo eu eros. Nulla
-                iaculis, purus a pharetra rhoncus, turpis risus imperdiet lectus, eu aliquet metus dolor non est.
-                Phasellus efficitur sem interdum ipsum molestie consequat. Quisque malesuada ipsum lectus, ac fringilla
-                ante suscipit id. Phasellus at purus nec turpis maximus blandit in ac sem. Ut laoreet luctus nisl, eget
-                condimentum ante ultricies varius.
+        <div class="toolbox__page toolbox__page--options">
+            <div class="toolbox__head">
+                <h1>Options</h1>
+            </div>
+            
+            <div class="toolbox__body">
+            </div>
+        </div>
 
-                Ut sit amet dapibus ligula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-                inceptos himenaeos. Donec eu blandit lacus, ac congue dui. Curabitur nulla sem, pretium non augue non,
-                aliquet tristique magna. Mauris non purus non ante ultricies facilisis. Nam elit enim, cursus nec nisl
-                ac, rutrum auctor orci. Duis viverra at sapien iaculis suscipit. Duis auctor lorem neque, eget dictum
-                elit efficitur non. Quisque consectetur diam non quam tempor ullamcorper. Pellentesque sagittis quam id
-                nunc semper vehicula. Proin condimentum aliquam purus sit amet ultricies.</p>
+        <div class="toolbox__page toolbox__page--about">
+            <div class="toolbox__head">
+                <h1>About</h1>
+            </div>
+            
+            <div class="toolbox__body">
+            </div>
         </div>
 
     </div>
